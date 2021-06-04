@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "xo",
+    "plugin:prettier/recommended",
+    "plugin:eslint-comments/recommended",
+    "plugin:import/recommended",
+    "plugin:node/recommended",
+    "plugin:unicorn/recommended"
+  ]
+}
