@@ -9,7 +9,7 @@
   ],
   "overrides": [
     {
-      "files": ["src/**/*.ts"],
+      "files": ["src/**/*.ts*"],
       "extends": [
         "xo-typescript",
         "prettier",
@@ -27,6 +27,10 @@
         ],
         "unicorn/prefer-node-protocol": "off"
       }
+    },
+    {
+      "files": ["src/**/*.tsx"],
+      "extends": ["xo-react", "prettier"]
     }
   ]
 }
