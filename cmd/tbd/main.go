@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"github.com/charlesbjohnson/tbd/internal/tui"
 )
 
 func main() {
-	fmt.Println("ok")
+	tui.Start()
 }
