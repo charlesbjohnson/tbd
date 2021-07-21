@@ -1,10 +1,12 @@
-local concat, flatten
+local concat, flatten, slice
 
-concat = function(lst, other)
-	if type(other) == "table" then
-		vim.list_extend(lst, other)
-	else
-		table.insert(lst, other)
+concat = function(lst, ...)
+	for _, other in ipairs({ ... }) do
+		if type(other) == "table" then
+			vim.list_extend(lst, other)
+		else
+			table.insert(lst, other)
+		end
 	end
 
 	return lst
@@ -33,7 +35,30 @@ flatten = function(lst, depth)
 	return flattened
 end
 
+slice = function(lst, start, finish)
+	local sliced = {}
+
+	if not start or start < 1 or start > #lst then
+		start = 1
+	end
+
+	if not finish or finish > #lst then
+		finish = #lst
+	elseif finish < 0 then
+		finish = #lst + (finish + 1)
+	end
+
+	local i = start
+	while i <= finish do
+		table.insert(sliced, lst[i])
+		i = i + 1
+	end
+
+	return sliced
+end
+
 return {
 	concat = concat,
 	flatten = flatten,
+	slice = slice,
 }

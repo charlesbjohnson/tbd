@@ -13,4 +13,5 @@ end
 return {
 	split = vim.split,
 	template = template,
+	trim = vim.trim,
 }

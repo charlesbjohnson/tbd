@@ -45,13 +45,13 @@ update = function(mdl, message)
 			relative = "cursor",
 
 			row = 0,
-			col = (data.line.start - 1) - data.cursor[2],
+			col = (data.line.col - 1) - data.cursor[2],
 
 			height = 1,
-			width = util.nvim.win_get_net_width(0) - data.line.start,
+			width = util.nvim.win_get_net_width(0) - data.line.col,
 		})
 
-		mdl.cursor = { 1, data.cursor[2] - (data.line.start - 1) }
+		mdl.cursor = { 1, data.cursor[2] - (data.line.col - 1) }
 		mdl.line = data.line
 
 		return mdl
@@ -65,11 +65,8 @@ update = function(mdl, message)
 		local cursor = util.table.copy(mdl.cursor)
 		mdl.cursor = nil
 
-		local line = util.table.copy(mdl.line)
+		local line = util.nvim.get_current_line()
 		mdl.line = nil
-
-		line.parsed = util.nvim.get_current_line()
-		line.source = string.rep(" ", line.start - 1) .. line.parsed
 
 		return mdl, {
 			"document/finish_edit_line",

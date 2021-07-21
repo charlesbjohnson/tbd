@@ -1,14 +1,17 @@
 local util = require("tbd.util")
 local mountable = require("tbd.ui.common.mountable")
 
+local DocumentTree = require("tbd.data.document_tree")
+
 local model, event, update, view
-local parse_line
 
 model = function()
 	return mountable.model({
 		buf = util.nvim.create_buf(true, false),
-		cursor = nil,
+		tree = DocumentTree:new(),
 		lines = nil,
+		line = nil,
+		cursor = nil,
 	})
 end
 
@@ -34,7 +37,13 @@ update = function(mdl, message)
 		end
 
 		mdl.cursor = util.nvim.win_get_cursor(0)
-		mdl.lines = { "foo", "  bar", "    baz", "      qux" }
+
+		mdl.tree:append_to(nil, "foo")
+		mdl.tree:append_to(1, "bar")
+		mdl.tree:append_to(2, "baz")
+		mdl.tree:append_to(3, "qux")
+
+		mdl.lines = mdl.tree:render()
 
 		return mdl
 	end
@@ -48,10 +57,10 @@ update = function(mdl, message)
 	end
 
 	if action == "document/reposition_cursor" then
-		local line = parse_line(util.nvim.get_current_line())
+		local line = mdl.tree:get(data.cursor[1])
 
-		if mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.start - 1 then
-			mdl.cursor = { data.cursor[1], line.start - 1 }
+		if mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.col - 1 then
+			mdl.cursor = { data.cursor[1], line.col - 1 }
 		else
 			mdl.cursor = data.cursor
 		end
@@ -60,23 +69,25 @@ update = function(mdl, message)
 	end
 
 	if action == "document/begin_edit_line" then
-		return mdl,
+		mdl.line = mdl.tree:get(mdl.cursor[1])
+
+		return mdl, {
+			"editor/setup",
 			{
-				"editor/setup",
-				{
-					cursor = mdl.cursor,
-					line = parse_line(util.nvim.get_current_line()),
-				},
-			}
+				cursor = mdl.cursor,
+				line = mdl.line,
+			},
+		}
 	end
 
 	if action == "document/finish_edit_line" then
-		if data.line.source ~= mdl.lines[mdl.cursor[1]] then
-			mdl.lines = util.table.copy(mdl.lines)
-			mdl.lines[mdl.cursor[1]] = data.line.source
+		if mdl.line.parsed ~= data.line then
+			mdl.line = mdl.tree:set(mdl.line.row, data.line)
+			mdl.lines = mdl.tree:render()
 		end
 
-		mdl.cursor = { mdl.cursor[1], (data.line.start - 1) + data.cursor[2] }
+		mdl.cursor = { mdl.line.row, (mdl.line.col - 1) + data.cursor[2] }
+		mdl.line = nil
 
 		return mdl
 	end
@@ -129,17 +140,6 @@ view = function(mdl, prev, props)
 			util.nvim.buf_delete(mdl.buf, {})
 		end,
 	})
-end
-
-parse_line = function(line)
-	local start = (line:find("%S"))
-	local parsed = line:sub(start)
-
-	return {
-		source = line,
-		parsed = parsed,
-		start = start,
-	}
 end
 
 return {
