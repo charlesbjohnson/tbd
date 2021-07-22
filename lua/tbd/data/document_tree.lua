@@ -48,6 +48,30 @@ function DocumentTree:append_to(row, data)
 	return self:_to_line(node)
 end
 
+function DocumentTree:insert_before(row, data)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:insert_before(path, util.string.trim(data))
+	self:_render()
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:insert_after(row, data)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:insert_after(path, util.string.trim(data))
+	self:_render()
+
+	return self:_to_line(node)
+end
+
 function DocumentTree:render()
 	return util.table.copy(self._lines)
 end

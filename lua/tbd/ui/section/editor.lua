@@ -42,10 +42,11 @@ update = function(mdl, message)
 		mdl.buf = util.nvim.create_buf(false, true)
 		mdl.win = util.nvim.open_win(mdl.buf, false, {
 			style = "minimal",
-			relative = "cursor",
+			relative = "win",
 
-			row = 0,
-			col = (data.line.col - 1) - data.cursor[2],
+			bufpos = { 0, 0 },
+			row = data.line.row - 1,
+			col = data.line.col - 1,
 
 			height = 1,
 			width = util.nvim.win_get_net_width(0) - data.line.col,

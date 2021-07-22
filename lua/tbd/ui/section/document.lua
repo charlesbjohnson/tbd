@@ -24,6 +24,14 @@ event = function(evt, data)
 		if data.key == "Enter" then
 			return "document/begin_edit_line"
 		end
+
+		if data.key == "O" then
+			return "document/insert_before_line"
+		end
+
+		if data.key == "o" then
+			return "document/insert_after_line"
+		end
 	end
 end
 
@@ -69,7 +77,7 @@ update = function(mdl, message)
 	end
 
 	if action == "document/begin_edit_line" then
-		mdl.line = mdl.tree:get(mdl.cursor[1])
+		mdl.line = mdl.line or mdl.tree:get(mdl.cursor[1])
 
 		return mdl, {
 			"editor/setup",
@@ -90,6 +98,24 @@ update = function(mdl, message)
 		mdl.line = nil
 
 		return mdl
+	end
+
+	if action == "document/insert_before_line" then
+		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "FOO")
+		mdl.lines = mdl.tree:render()
+
+		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		return mdl, "document/begin_edit_line"
+	end
+
+	if action == "document/insert_after_line" then
+		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "FOO")
+		mdl.lines = mdl.tree:render()
+
+		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		return mdl, "document/begin_edit_line"
 	end
 
 	return mdl
@@ -116,6 +142,28 @@ view = function(mdl, prev, props)
 				"<CR>",
 				util.string.template(
 					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "Enter" })<CR>]],
+					props
+				),
+				{ noremap = true, silent = true }
+			)
+
+			util.nvim.buf_set_keymap(
+				mdl.buf,
+				"n",
+				"o",
+				util.string.template(
+					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "o" })<CR>]],
+					props
+				),
+				{ noremap = true, silent = true }
+			)
+
+			util.nvim.buf_set_keymap(
+				mdl.buf,
+				"n",
+				"O",
+				util.string.template(
+					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "O" })<CR>]],
 					props
 				),
 				{ noremap = true, silent = true }
