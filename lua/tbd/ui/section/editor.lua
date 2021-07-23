@@ -7,6 +7,7 @@ model = function()
 	return mountable.model({
 		buf = nil,
 		win = nil,
+		start_insert = nil,
 		cursor = nil,
 		line = nil,
 	})
@@ -52,6 +53,7 @@ update = function(mdl, message)
 			width = util.nvim.win_get_net_width(0) - data.line.col,
 		})
 
+		mdl.start_insert = data.start_insert and true or false
 		mdl.cursor = { 1, data.cursor[2] - (data.line.col - 1) }
 		mdl.line = data.line
 
@@ -62,6 +64,8 @@ update = function(mdl, message)
 		if not mountable.should_unmount(mdl) then
 			return mdl
 		end
+
+		mdl.start_insert = nil
 
 		local cursor = util.table.copy(mdl.cursor)
 		mdl.cursor = nil
@@ -143,6 +147,10 @@ view = function(mdl, prev, props)
 
 			if mdl.cursor and prev.cursor ~= mdl.cursor then
 				util.nvim.win_set_cursor(mdl.win, mdl.cursor)
+			end
+
+			if mdl.start_insert and prev.start_insert ~= mdl.start_insert then
+				util.nvim.command("startinsert")
 			end
 		end,
 

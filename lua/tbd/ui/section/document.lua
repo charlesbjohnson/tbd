@@ -89,13 +89,14 @@ update = function(mdl, message)
 	if action == "document/begin_edit_line" then
 		mdl.line = mdl.line or mdl.tree:get(mdl.cursor[1])
 
-		return mdl, {
-			"editor/setup",
+		return mdl,
 			{
-				cursor = mdl.cursor,
-				line = mdl.line,
-			},
-		}
+				"editor/setup",
+				util.table.extend(data, {
+					cursor = mdl.cursor,
+					line = mdl.line,
+				}),
+			}
 	end
 
 	if action == "document/finish_edit_line" then
@@ -116,7 +117,7 @@ update = function(mdl, message)
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, "document/begin_edit_line"
+		return mdl, { "document/begin_edit_line", { start_insert = true } }
 	end
 
 	if action == "document/insert_after_line" then
@@ -125,7 +126,7 @@ update = function(mdl, message)
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, "document/begin_edit_line"
+		return mdl, { "document/begin_edit_line", { start_insert = true } }
 	end
 
 	if action == "document/prepend_under_line" then
@@ -134,7 +135,7 @@ update = function(mdl, message)
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, "document/begin_edit_line"
+		return mdl, { "document/begin_edit_line", { start_insert = true } }
 	end
 
 	if action == "document/append_under_line" then
@@ -143,7 +144,7 @@ update = function(mdl, message)
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, "document/begin_edit_line"
+		return mdl, { "document/begin_edit_line", { start_insert = true } }
 	end
 
 	return mdl
