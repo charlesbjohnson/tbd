@@ -110,26 +110,26 @@ view = function(mdl, prev, props)
 				)
 			end)
 
-			util.nvim.buf_set_keymap(
-				mdl.buf,
-				"n",
-				"<Esc>",
-				util.string.template(
-					[[<Cmd>lua require("tbd").event(${app}, "editor/key_pressed", { key = "Esc" })<CR>]],
-					props
-				),
-				{ noremap = true, silent = true }
-			)
+			local key_pressed_event = function(key)
+				return util.string.template(
+					[[<Cmd>lua require("tbd").event(${app}, "editor/key_pressed", { key = "${key}" })<CR>]],
+					{
+						app = props.app,
+						key = key,
+					}
+				)
+			end
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "<CR>", "<NOP>", { noremap = true, silent = true })
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Esc>", key_pressed_event("Esc"))
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "o", "<NOP>", { noremap = true, silent = true })
-			util.nvim.buf_set_keymap(mdl.buf, "n", "O", "<NOP>", { noremap = true, silent = true })
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", "<NOP>")
+			util.nvim.buf_set_keymap(mdl.buf, "i", "<Enter>", "<NOP>")
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "j", "<NOP>", { noremap = true, silent = true })
-			util.nvim.buf_set_keymap(mdl.buf, "n", "k", "<NOP>", { noremap = true, silent = true })
+			util.nvim.buf_set_keymap(mdl.buf, "n", "o", "<NOP>")
+			util.nvim.buf_set_keymap(mdl.buf, "n", "O", "<NOP>")
 
-			util.nvim.buf_set_keymap(mdl.buf, "i", "<CR>", "<NOP>", { noremap = true, silent = true })
+			util.nvim.buf_set_keymap(mdl.buf, "n", "j", "<NOP>")
+			util.nvim.buf_set_keymap(mdl.buf, "n", "k", "<NOP>")
 
 			util.nvim.set_current_win(mdl.win)
 		end,

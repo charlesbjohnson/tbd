@@ -136,38 +136,19 @@ view = function(mdl, prev, props)
 				)
 			end)
 
-			util.nvim.buf_set_keymap(
-				mdl.buf,
-				"n",
-				"<CR>",
-				util.string.template(
-					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "Enter" })<CR>]],
-					props
-				),
-				{ noremap = true, silent = true }
-			)
+			local key_pressed_event = function(key)
+				return util.string.template(
+					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "${key}" })<CR>]],
+					{
+						app = props.app,
+						key = key,
+					}
+				)
+			end
 
-			util.nvim.buf_set_keymap(
-				mdl.buf,
-				"n",
-				"o",
-				util.string.template(
-					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "o" })<CR>]],
-					props
-				),
-				{ noremap = true, silent = true }
-			)
-
-			util.nvim.buf_set_keymap(
-				mdl.buf,
-				"n",
-				"O",
-				util.string.template(
-					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "O" })<CR>]],
-					props
-				),
-				{ noremap = true, silent = true }
-			)
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("Enter"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "o", key_pressed_event("o"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "O", key_pressed_event("O"))
 
 			util.nvim.win_set_buf(0, mdl.buf)
 		end,

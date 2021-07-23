@@ -1,6 +1,11 @@
 local string_util = require("tbd.util.string")
+local table_util = require("tbd.util.table")
 
-local define_augroup, define_autocmd, win_get_net_width
+local buf_set_keymap, define_augroup, define_autocmd, win_get_net_width
+
+buf_set_keymap = function(buf, mode, key, map, opts)
+	vim.api.nvim_buf_set_keymap(buf, mode, key, map, table_util.extend(opts or {}, { noremap = true, silent = true }))
+end
 
 define_augroup = function(name, fn)
 	vim.api.nvim_exec("augroup " .. name, false)
@@ -48,6 +53,7 @@ win_get_net_width = function(win)
 end
 
 return setmetatable({
+	buf_set_keymap = buf_set_keymap,
 	define_augroup = define_augroup,
 	define_autocmd = define_autocmd,
 	win_get_net_width = win_get_net_width,
