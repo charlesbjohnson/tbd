@@ -22,9 +22,9 @@ event = function(evt, data)
 	end
 
 	if evt == "editor/key_pressed" then
-		data = util.table.extend(data or {}, { mode = util.vim.mode() })
+		data = util.table.extend(data, { key = util.nvim.decode_keycodes(data.key) })
 
-		if data.mode == "n" and data.key == "Esc" then
+		if data.key == "<Esc>" then
 			return "editor/teardown"
 		end
 	end
@@ -115,12 +115,12 @@ view = function(mdl, prev, props)
 					[[<Cmd>lua require("tbd").event(${app}, "editor/key_pressed", { key = "${key}" })<CR>]],
 					{
 						app = props.app,
-						key = key,
+						key = util.nvim.encode_keycodes(key),
 					}
 				)
 			end
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "<Esc>", key_pressed_event("Esc"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Esc>", key_pressed_event("<Esc>"))
 
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", "<NOP>")
 			util.nvim.buf_set_keymap(mdl.buf, "i", "<Enter>", "<NOP>")

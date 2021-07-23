@@ -21,7 +21,9 @@ event = function(evt, data)
 	end
 
 	if evt == "document/key_pressed" then
-		if data.key == "Enter" then
+		data = util.table.extend(data, { key = util.nvim.decode_keycodes(data.key) })
+
+		if data.key == "<Enter>" then
 			return "document/begin_edit_line"
 		end
 
@@ -33,11 +35,11 @@ event = function(evt, data)
 			return "document/insert_after_line"
 		end
 
-		if data.key == "Tab+O" then
+		if data.key == "<Tab>O" then
 			return "document/prepend_under_line"
 		end
 
-		if data.key == "Tab+o" then
+		if data.key == "<Tab>o" then
 			return "document/append_under_line"
 		end
 	end
@@ -167,17 +169,18 @@ view = function(mdl, prev, props)
 					[[<Cmd>lua require("tbd").event(${app}, "document/key_pressed", { key = "${key}" })<CR>]],
 					{
 						app = props.app,
-						key = key,
+						key = util.nvim.encode_keycodes(key),
 					}
 				)
 			end
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("Enter"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("<Enter>"))
+
 			util.nvim.buf_set_keymap(mdl.buf, "n", "o", key_pressed_event("o"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "O", key_pressed_event("O"))
 
-			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>o", key_pressed_event("Tab+o"))
-			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>O", key_pressed_event("Tab+O"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>o", key_pressed_event("<Tab>o"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>O", key_pressed_event("<Tab>O"))
 
 			util.nvim.win_set_buf(0, mdl.buf)
 		end,
