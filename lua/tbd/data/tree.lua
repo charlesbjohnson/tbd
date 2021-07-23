@@ -48,6 +48,22 @@ function Tree:iter()
 	end
 end
 
+function Tree:prepend_to(path, data)
+	path = path or {}
+
+	local node = self:_get_node_at(path)
+	if not node then
+		return
+	end
+
+	local child_node = self:_to_node(data)
+	local child_path = util.list.concat({}, path, 1)
+
+	table.insert(node.children, child_path[#child_path], child_node)
+
+	return { data = child_node.data, path = child_path }
+end
+
 function Tree:append_to(path, data)
 	path = path or {}
 

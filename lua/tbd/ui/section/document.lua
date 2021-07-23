@@ -32,6 +32,14 @@ event = function(evt, data)
 		if data.key == "o" then
 			return "document/insert_after_line"
 		end
+
+		if data.key == "Tab+O" then
+			return "document/prepend_under_line"
+		end
+
+		if data.key == "Tab+o" then
+			return "document/append_under_line"
+		end
 	end
 end
 
@@ -118,6 +126,24 @@ update = function(mdl, message)
 		return mdl, "document/begin_edit_line"
 	end
 
+	if action == "document/prepend_under_line" then
+		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "FOO")
+		mdl.lines = mdl.tree:render()
+
+		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		return mdl, "document/begin_edit_line"
+	end
+
+	if action == "document/append_under_line" then
+		mdl.line = mdl.tree:append_to(mdl.cursor[1], "FOO")
+		mdl.lines = mdl.tree:render()
+
+		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		return mdl, "document/begin_edit_line"
+	end
+
 	return mdl
 end
 
@@ -149,6 +175,9 @@ view = function(mdl, prev, props)
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("Enter"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "o", key_pressed_event("o"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "O", key_pressed_event("O"))
+
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>o", key_pressed_event("Tab+o"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>O", key_pressed_event("Tab+O"))
 
 			util.nvim.win_set_buf(0, mdl.buf)
 		end,

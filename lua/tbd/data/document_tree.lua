@@ -36,6 +36,18 @@ function DocumentTree:set(row, data)
 	return self:_to_line(node)
 end
 
+function DocumentTree:prepend_to(row, data)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:prepend_to(path, util.string.trim(data))
+	self:_render()
+
+	return self:_to_line(node)
+end
+
 function DocumentTree:append_to(row, data)
 	local path = self:_get_path_at(row)
 	if not path then
