@@ -70,8 +70,18 @@ update = function(mdl, message)
 		local cursor = util.table.copy(mdl.cursor)
 		mdl.cursor = nil
 
-		local line = util.nvim.get_current_line()
+		local line = util.string.trim(util.nvim.get_current_line())
 		mdl.line = nil
+
+		if line == "" then
+			return mdl, {
+				"document/abort_edit_line",
+				{
+					cursor = cursor,
+					line = line,
+				},
+			}
+		end
 
 		return mdl, {
 			"document/finish_edit_line",

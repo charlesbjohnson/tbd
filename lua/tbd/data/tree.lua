@@ -114,6 +114,22 @@ function Tree:insert_after(path, data)
 	return { data = child_node.data, path = child_path }
 end
 
+function Tree:remove(path)
+	path = path or {}
+
+	local parent_node = self:_get_node_at(util.list.slice(path, 1, -2))
+	if not parent_node then
+		return
+	end
+
+	local child_node = parent_node.children[path[#path]]
+	local child_path = util.table.copy(path)
+
+	table.remove(parent_node.children, path[#path])
+
+	return { data = child_node.data, path = child_path }
+end
+
 function Tree:_get_node_at(path)
 	if type(path) ~= "table" then
 		return

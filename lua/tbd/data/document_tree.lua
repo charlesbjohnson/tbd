@@ -84,6 +84,20 @@ function DocumentTree:insert_after(row, data)
 	return self:_to_line(node)
 end
 
+function DocumentTree:remove(row)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:remove(path)
+	local result = self:_to_line(node)
+
+	self:_render()
+
+	return result
+end
+
 function DocumentTree:render()
 	return util.table.copy(self._lines)
 end

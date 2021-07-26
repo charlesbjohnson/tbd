@@ -111,6 +111,15 @@ update = function(mdl, message)
 		return mdl
 	end
 
+	if action == "document/abort_edit_line" then
+		mdl.line = mdl.tree:remove(mdl.line.row)
+		mdl.lines = mdl.tree:render()
+
+		mdl.line = nil
+
+		return mdl
+	end
+
 	if action == "document/insert_before_line" then
 		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "FOO")
 		mdl.lines = mdl.tree:render()
