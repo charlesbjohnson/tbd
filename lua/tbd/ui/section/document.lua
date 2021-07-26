@@ -121,39 +121,39 @@ update = function(mdl, message)
 	end
 
 	if action == "document/insert_before_line" then
-		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "FOO")
+		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "__")
 		mdl.lines = mdl.tree:render()
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, { "document/begin_edit_line", { start_insert = true } }
+		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/insert_after_line" then
-		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "FOO")
+		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "__")
 		mdl.lines = mdl.tree:render()
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, { "document/begin_edit_line", { start_insert = true } }
+		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/prepend_under_line" then
-		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "FOO")
+		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "__")
 		mdl.lines = mdl.tree:render()
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, { "document/begin_edit_line", { start_insert = true } }
+		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/append_under_line" then
-		mdl.line = mdl.tree:append_to(mdl.cursor[1], "FOO")
+		mdl.line = mdl.tree:append_to(mdl.cursor[1], "__")
 		mdl.lines = mdl.tree:render()
 
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
 
-		return mdl, { "document/begin_edit_line", { start_insert = true } }
+		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	return mdl
