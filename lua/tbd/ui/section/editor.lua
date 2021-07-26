@@ -9,6 +9,7 @@ model = function()
 		win = nil,
 		start_blank = nil,
 		start_insert = nil,
+		start_append = nil,
 		cursor = nil,
 		line = nil,
 	})
@@ -38,6 +39,7 @@ update = function(mdl, message)
 
 	mdl.start_blank = nil
 	mdl.start_insert = nil
+	mdl.start_append = nil
 
 	if action == "editor/setup" then
 		if not mountable.should_mount(mdl) then
@@ -59,8 +61,18 @@ update = function(mdl, message)
 
 		mdl.start_blank = data.start_blank and true or false
 		mdl.start_insert = data.start_insert and true or false
+		mdl.start_append = data.start_append and true or false
 
 		mdl.cursor = { 1, data.cursor[2] - (data.line.col - 1) }
+		if mdl.start_append then
+			mdl.cursor[2] = mdl.cursor[2] + 1
+
+			if mdl.cursor[2] < #data.line.parsed then
+				mdl.start_append = false
+				mdl.start_insert = true
+			end
+		end
+
 		mdl.line = data.line
 
 		return mdl
@@ -169,6 +181,8 @@ view = function(mdl, prev, props)
 
 			if mdl.start_insert then
 				util.nvim.command("startinsert")
+			elseif mdl.start_append then
+				util.nvim.command("startinsert!")
 			end
 		end,
 

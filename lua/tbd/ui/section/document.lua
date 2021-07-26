@@ -43,6 +43,14 @@ event = function(evt, data)
 			return "document/begin_edit_line"
 		end
 
+		if data.key == "i" then
+			return { "document/begin_edit_line", { start_insert = true } }
+		end
+
+		if data.key == "a" then
+			return { "document/begin_edit_line", { start_append = true } }
+		end
+
 		if data.key == "O" then
 			return "document/insert_before_line"
 		end
@@ -246,6 +254,8 @@ view = function(mdl, prev, props)
 			util.nvim.buf_set_keymap(mdl.buf, "n", "L", key_pressed_event("L"))
 
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("<Enter>"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "i", key_pressed_event("i"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "a", key_pressed_event("a"))
 
 			util.nvim.buf_set_keymap(mdl.buf, "n", "o", key_pressed_event("o"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "O", key_pressed_event("O"))
