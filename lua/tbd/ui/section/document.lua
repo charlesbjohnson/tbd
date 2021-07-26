@@ -23,6 +23,22 @@ event = function(evt, data)
 	if evt == "document/key_pressed" then
 		data = util.table.extend(data, { key = util.nvim.decode_keycodes(data.key) })
 
+		if data.key == "H" then
+			return "document/step_up_cursor"
+		end
+
+		if data.key == "J" then
+			return "document/over_next_cursor"
+		end
+
+		if data.key == "K" then
+			return "document/over_prev_cursor"
+		end
+
+		if data.key == "L" then
+			return "document/step_down_cursor"
+		end
+
 		if data.key == "<Enter>" then
 			return "document/begin_edit_line"
 		end
@@ -81,6 +97,46 @@ update = function(mdl, message)
 			mdl.cursor = { data.cursor[1], line.col - 1 }
 		else
 			mdl.cursor = data.cursor
+		end
+
+		return mdl
+	end
+
+	if action == "document/step_up_cursor" then
+		local line = mdl.tree:get_parent(mdl.cursor[1])
+
+		if line then
+			mdl.cursor = { line.row, line.col - 1 }
+		end
+
+		return mdl
+	end
+
+	if action == "document/step_down_cursor" then
+		local line = mdl.tree:get_first_child(mdl.cursor[1])
+
+		if line then
+			mdl.cursor = { line.row, line.col - 1 }
+		end
+
+		return mdl
+	end
+
+	if action == "document/over_next_cursor" then
+		local line = mdl.tree:get_next_sibling(mdl.cursor[1])
+
+		if line then
+			mdl.cursor = { line.row, line.col - 1 }
+		end
+
+		return mdl
+	end
+
+	if action == "document/over_prev_cursor" then
+		local line = mdl.tree:get_prev_sibling(mdl.cursor[1])
+
+		if line then
+			mdl.cursor = { line.row, line.col - 1 }
 		end
 
 		return mdl
@@ -183,6 +239,11 @@ view = function(mdl, prev, props)
 					}
 				)
 			end
+
+			util.nvim.buf_set_keymap(mdl.buf, "n", "H", key_pressed_event("H"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "J", key_pressed_event("J"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "K", key_pressed_event("K"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "L", key_pressed_event("L"))
 
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Enter>", key_pressed_event("<Enter>"))
 

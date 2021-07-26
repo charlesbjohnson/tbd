@@ -24,6 +24,62 @@ function DocumentTree:get(row)
 	return self:_to_line(node)
 end
 
+function DocumentTree:get_parent(row)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:get_parent(path)
+	if not node then
+		return
+	end
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:get_first_child(row)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:get_first_child(path)
+	if not node then
+		return
+	end
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:get_next_sibling(row)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:get_next_sibling(path)
+	if not node then
+		return
+	end
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:get_prev_sibling(row)
+	local path = self:_get_path_at(row)
+	if not path then
+		return
+	end
+
+	local node = self._tree:get_prev_sibling(path)
+	if not node then
+		return
+	end
+
+	return self:_to_line(node)
+end
+
 function DocumentTree:set(row, data)
 	local path = self:_get_path_at(row)
 	if not path then

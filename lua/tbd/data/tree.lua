@@ -22,6 +22,75 @@ function Tree:get(path)
 	return { data = node.data, path = path }
 end
 
+function Tree:get_parent(path)
+	path = util.list.slice(path or {}, 1, -2)
+
+	if #path == 0 then
+		return
+	end
+
+	local node = self:_get_node_at(path)
+	if not node then
+		return
+	end
+
+	return { data = node.data, path = path }
+end
+
+function Tree:get_first_child(path)
+	path = path or {}
+
+	local parent_node = self:_get_node_at(path)
+	if not parent_node or #parent_node.children == 0 then
+		return
+	end
+
+	local child_node = parent_node.children[1]
+	local child_path = util.list.concat({}, path, 1)
+
+	return { data = child_node.data, path = child_path }
+end
+
+function Tree:get_next_sibling(path)
+	path = path or {}
+
+	local parent_node = self:_get_node_at(util.list.slice(path, 1, -2))
+	if not parent_node then
+		return
+	end
+
+	if path[#path] >= #parent_node.children then
+		return
+	end
+
+	local sibling_path = util.table.copy(path)
+	sibling_path[#sibling_path] = sibling_path[#sibling_path] + 1
+
+	local sibling_node = parent_node.children[sibling_path[#sibling_path]]
+
+	return { data = sibling_node.data, path = sibling_path }
+end
+
+function Tree:get_prev_sibling(path)
+	path = path or {}
+
+	local parent_node = self:_get_node_at(util.list.slice(path, 1, -2))
+	if not parent_node then
+		return
+	end
+
+	if path[#path] <= 1 then
+		return
+	end
+
+	local sibling_path = util.table.copy(path)
+	sibling_path[#sibling_path] = sibling_path[#sibling_path] - 1
+
+	local sibling_node = parent_node.children[sibling_path[#sibling_path]]
+
+	return { data = sibling_node.data, path = sibling_path }
+end
+
 function Tree:set(path, data)
 	path = path or {}
 
