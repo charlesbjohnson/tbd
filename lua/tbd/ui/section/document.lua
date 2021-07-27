@@ -16,6 +16,10 @@ model = function()
 end
 
 event = function(evt, data)
+	if evt == "document/buffer_unloaded" then
+		return { "document/teardown", "quit" }
+	end
+
 	if evt == "document/cursor_moved" then
 		return { "document/reposition_cursor", { cursor = util.nvim.win_get_cursor(0) } }
 	end
@@ -232,6 +236,12 @@ view = function(mdl, prev, props)
 
 			util.nvim.define_augroup("TbdDocument", function()
 				util.nvim.define_autocmd(
+					"BufUnload",
+					util.string.template([[lua require("tbd").event(${app}, "document/buffer_unloaded")]], props),
+					{ buffer = mdl.buf }
+				)
+
+				util.nvim.define_autocmd(
 					"CursorMoved",
 					util.string.template([[lua require("tbd").event(${app}, "document/cursor_moved")]], props),
 					{ buffer = mdl.buf }
@@ -279,7 +289,9 @@ view = function(mdl, prev, props)
 		end,
 
 		unmount = function()
-			util.nvim.buf_delete(mdl.buf, {})
+			vim.schedule(function()
+				util.nvim.buf_delete(mdl.buf, {})
+			end)
 		end,
 	})
 end

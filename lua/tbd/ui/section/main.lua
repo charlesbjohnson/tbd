@@ -3,7 +3,7 @@ local util = require("tbd.util")
 local document = require("tbd.ui.section.document")
 local editor = require("tbd.ui.section.editor")
 
-local model, id, start, stop, event, update, view
+local model, id, start, event, update, view
 
 model = function()
 	return {
@@ -18,10 +18,6 @@ end
 
 start = function()
 	return "document/setup"
-end
-
-stop = function()
-	return "document/teardown"
 end
 
 event = function(evt, data)
@@ -52,7 +48,6 @@ return {
 	model = model,
 	id = id,
 	start = start,
-	stop = stop,
 	event = event,
 	update = update,
 	view = view,

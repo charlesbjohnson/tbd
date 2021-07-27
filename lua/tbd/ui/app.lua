@@ -1,6 +1,6 @@
 local util = require("tbd.util")
 
-local start, event, stop
+local start, event
 local dispatch, to_messages, to_message, is_message
 
 local apps = {}
@@ -9,7 +9,6 @@ start = function(program)
 	local app = {
 		program = program,
 		model = program.model(),
-		stopping = false,
 	}
 
 	app.id = app.program.id(app.model)
@@ -20,16 +19,8 @@ end
 
 event = function(id, evt, data)
 	local app = apps[id]
-	if app and not app.stopping then
+	if app then
 		dispatch(app, app.program.event(evt, data or {}))
-	end
-end
-
-stop = function(app)
-	if not app.stopping then
-		app.stopping = true
-		dispatch(app, app.program.stop(app.model))
-		apps[app.id] = nil
 	end
 end
 
@@ -45,7 +36,7 @@ dispatch = function(app, messages)
 
 	for _, message in ipairs(messages) do
 		if message[1] == "quit" then
-			stop(app)
+			apps[app.id] = nil
 			return
 		end
 
@@ -59,9 +50,7 @@ dispatch = function(app, messages)
 
 	app.program.view(app.model, prev_model, { app = app.id })
 
-	if not app.stopping then
-		dispatch(app, next_messages)
-	end
+	dispatch(app, next_messages)
 end
 
 to_messages = function(messages)
