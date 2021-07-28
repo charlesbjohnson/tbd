@@ -84,10 +84,19 @@ function M.update(mdl, message)
 
 		mdl.cursor = util.nvim.win_get_cursor(0)
 
-		mdl.tree:append_to(nil, "foo")
+		mdl.tree:set(1, "foo")
+		mdl.tree:insert_after(1, "foo")
+		mdl.tree:insert_after(1, "foo")
+
 		mdl.tree:append_to(1, "bar")
-		mdl.tree:append_to(2, "baz")
-		mdl.tree:append_to(3, "qux")
+		mdl.tree:insert_after(2, "bar")
+
+		mdl.tree:append_to(3, "baz")
+		mdl.tree:insert_after(4, "baz")
+
+		mdl.tree:append_to(4, "qux")
+		mdl.tree:append_to(4, "qux")
+		mdl.tree:append_to(7, "qux")
 
 		mdl.lines = mdl.tree:render()
 
@@ -105,7 +114,7 @@ function M.update(mdl, message)
 	if action == "document/reposition_cursor" then
 		local line = mdl.tree:get(data.cursor[1])
 
-		if mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.col - 1 then
+		if line and (mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.col - 1) then
 			mdl.cursor = { data.cursor[1], line.col - 1 }
 		else
 			mdl.cursor = data.cursor
@@ -156,6 +165,11 @@ function M.update(mdl, message)
 
 	if action == "document/begin_edit_line" then
 		mdl.line = mdl.line or mdl.tree:get(mdl.cursor[1])
+
+		if not mdl.line then
+			mdl.line = mdl.tree:set(mdl.cursor[1], "__")
+			data.start_blank = true
+		end
 
 		return mdl,
 			{
