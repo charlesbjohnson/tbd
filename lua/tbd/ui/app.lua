@@ -1,31 +1,29 @@
 local util = require("tbd.util")
 
-local start, event
-local dispatch, to_messages, to_message, is_message
+local M = {}
+local P = { apps = {} }
 
-local apps = {}
-
-start = function(program)
+function M.start(program)
 	local app = {
 		program = program,
 		model = program.model(),
 	}
 
 	app.id = app.program.id(app.model)
-	apps[app.id] = app
+	P.apps[app.id] = app
 
-	dispatch(app, app.program.start(app.model))
+	P.dispatch(app, app.program.start(app.model))
 end
 
-event = function(id, evt, data)
-	local app = apps[id]
+function M.event(id, evt, data)
+	local app = P.apps[id]
 	if app then
-		dispatch(app, app.program.event(evt, data or {}))
+		P.dispatch(app, app.program.event(evt, data or {}))
 	end
 end
 
-dispatch = function(app, messages)
-	messages = to_messages(messages)
+function P.dispatch(app, messages)
+	messages = P.to_messages(messages)
 	if #messages == 0 then
 		return
 	end
@@ -36,13 +34,13 @@ dispatch = function(app, messages)
 
 	for _, message in ipairs(messages) do
 		if message[1] == "quit" then
-			apps[app.id] = nil
+			P.apps[app.id] = nil
 			return
 		end
 
 		local next_message
 		next_model, next_message = app.program.update(next_model, message)
-		util.list.concat(next_messages, to_messages(next_message))
+		util.list.concat(next_messages, P.to_messages(next_message))
 	end
 
 	local prev_model = app.model
@@ -50,12 +48,12 @@ dispatch = function(app, messages)
 
 	app.program.view(app.model, prev_model, { app = app.id })
 
-	dispatch(app, next_messages)
+	P.dispatch(app, next_messages)
 end
 
-to_messages = function(messages)
+function P.to_messages(messages)
 	if type(messages) == "string" then
-		return { to_message(messages) }
+		return { P.to_message(messages) }
 	end
 
 	if type(messages) == "table" then
@@ -65,14 +63,14 @@ to_messages = function(messages)
 		while i <= #messages do
 			local v = messages[i]
 
-			if is_message(v) then
+			if P.is_message(v) then
 				table.insert(result, v)
 				i = i + 1
-			elseif is_message({ v, messages[i + 1] }) then
-				table.insert(result, to_message({ v, messages[i + 1] }))
+			elseif P.is_message({ v, messages[i + 1] }) then
+				table.insert(result, P.to_message({ v, messages[i + 1] }))
 				i = i + 2
 			else
-				table.insert(result, to_message(v))
+				table.insert(result, P.to_message(v))
 				i = i + 1
 			end
 		end
@@ -83,7 +81,7 @@ to_messages = function(messages)
 	return {}
 end
 
-to_message = function(message)
+function P.to_message(message)
 	if type(message) == "string" then
 		return { message, {} }
 	end
@@ -95,14 +93,11 @@ to_message = function(message)
 	return {}
 end
 
-is_message = function(message)
+function P.is_message(message)
 	return type(message) == "table"
 		and type(message[1]) == "string"
 		and type(message[2]) == "table"
-		and not is_message(message[2])
+		and not P.is_message(message[2])
 end
 
-return {
-	start = start,
-	event = event,
-}
+return M

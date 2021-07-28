@@ -1,6 +1,6 @@
-local concat, flatten, slice
+local M = {}
 
-concat = function(lst, ...)
+function M.concat(lst, ...)
 	for _, other in ipairs({ ... }) do
 		if type(other) == "table" then
 			vim.list_extend(lst, other)
@@ -12,7 +12,7 @@ concat = function(lst, ...)
 	return lst
 end
 
-flatten = function(lst, depth)
+function M.flatten(lst, depth)
 	if not depth then
 		return vim.tbl_flatten(lst)
 	end
@@ -24,7 +24,7 @@ flatten = function(lst, depth)
 		local v = lst[i]
 
 		if type(v) == "table" and depth > 0 then
-			concat(flattened, flatten(v, depth - 1))
+			M.concat(flattened, M.flatten(v, depth - 1))
 		else
 			table.insert(flattened, v)
 		end
@@ -35,7 +35,7 @@ flatten = function(lst, depth)
 	return flattened
 end
 
-slice = function(lst, start, finish)
+function M.slice(lst, start, finish)
 	local sliced = {}
 
 	if not start or start < 1 or start > #lst then
@@ -57,8 +57,4 @@ slice = function(lst, start, finish)
 	return sliced
 end
 
-return {
-	concat = concat,
-	flatten = flatten,
-	slice = slice,
-}
+return M

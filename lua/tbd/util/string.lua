@@ -1,8 +1,11 @@
 local table_util = require("tbd.util.table")
 
-local template
+local M = {
+	split = vim.split,
+	trim = vim.trim,
+}
 
-template = function(str, context)
+function M.template(str, context)
 	return (
 			str:gsub("%${([^}]+)}", function(accessor)
 				return table_util.dig(context, vim.split(accessor, "%.")) or ""
@@ -10,8 +13,4 @@ template = function(str, context)
 		)
 end
 
-return {
-	split = vim.split,
-	template = template,
-	trim = vim.trim,
-}
+return M

@@ -1,6 +1,8 @@
 local util = require("tbd.util")
 
-local function model(decorated)
+local M = {}
+
+function M.model(decorated)
 	return util.table.extend(decorated, {
 		mountable = {
 			mounted = false,
@@ -10,7 +12,7 @@ local function model(decorated)
 	})
 end
 
-local function view(mdl, options)
+function M.view(mdl, options)
 	options = options or {}
 
 	if not mdl.mountable.mounted and mdl.mountable.should_mount then
@@ -34,7 +36,7 @@ local function view(mdl, options)
 	end
 end
 
-local function should_mount(mdl)
+function M.should_mount(mdl)
 	if mdl.mountable.mounted then
 		return false
 	end
@@ -45,7 +47,7 @@ local function should_mount(mdl)
 	return true
 end
 
-local function should_unmount(mdl)
+function M.should_unmount(mdl)
 	if not mdl.mountable.mounted then
 		return false
 	end
@@ -56,9 +58,4 @@ local function should_unmount(mdl)
 	return true
 end
 
-return {
-	model = model,
-	view = view,
-	should_mount = should_mount,
-	should_unmount = should_unmount,
-}
+return M

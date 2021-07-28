@@ -1,20 +1,28 @@
 local string_util = require("tbd.util.string")
 local table_util = require("tbd.util.table")
 
-local buf_set_keymap, define_augroup, define_autocmd, decode_keycodes, encode_keycodes, win_get_net_width
+local M = setmetatable({}, {
+	__index = function(self, k)
+		if rawget(self, k) == nil then
+			return vim.api["nvim_" .. k]
+		end
 
-buf_set_keymap = function(buf, mode, key, map, opts)
+		return rawget(self, k)
+	end,
+})
+
+function M.buf_set_keymap(buf, mode, key, map, opts)
 	vim.api.nvim_buf_set_keymap(buf, mode, key, map, table_util.extend(opts or {}, { noremap = true, silent = true }))
 end
 
-define_augroup = function(name, fn)
+function M.define_augroup(name, fn)
 	vim.api.nvim_exec("augroup " .. name, false)
 	vim.api.nvim_exec("autocmd!", false)
 	fn()
 	vim.api.nvim_exec("augroup END", false)
 end
 
-define_autocmd = function(event, handler, options)
+function M.define_autocmd(event, handler, options)
 	options = options or {}
 
 	local opt_buf = ""
@@ -38,15 +46,15 @@ define_autocmd = function(event, handler, options)
 	)
 end
 
-decode_keycodes = function(str)
+function M.decode_keycodes(str)
 	return ((str:gsub("&lt;", "<")):gsub("&gt;", ">"))
 end
 
-encode_keycodes = function(str)
+function M.encode_keycodes(str)
 	return ((str:gsub("<", "&lt;")):gsub(">", "&gt;"))
 end
 
-win_get_net_width = function(win)
+function M.win_get_net_width(win)
 	local win_width = vim.api.nvim_win_get_width(win)
 	local sign_width = 1
 	local fold_width = vim.api.nvim_win_get_option(win, "foldcolumn")
@@ -60,19 +68,4 @@ win_get_net_width = function(win)
 	return win_width - sign_width - fold_width - num_width
 end
 
-return setmetatable({
-	buf_set_keymap = buf_set_keymap,
-	define_augroup = define_augroup,
-	define_autocmd = define_autocmd,
-	decode_keycodes = decode_keycodes,
-	encode_keycodes = encode_keycodes,
-	win_get_net_width = win_get_net_width,
-}, {
-	__index = function(self, k)
-		if rawget(self, k) == nil then
-			return vim.api["nvim_" .. k]
-		end
-
-		return rawget(self, k)
-	end,
-})
+return M

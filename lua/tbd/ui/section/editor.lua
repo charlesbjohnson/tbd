@@ -1,9 +1,9 @@
 local util = require("tbd.util")
 local mountable = require("tbd.ui.common.mountable")
 
-local model, event, update, view
+local M = {}
 
-model = function()
+function M.model()
 	return mountable.model({
 		buf = nil,
 		win = nil,
@@ -15,7 +15,7 @@ model = function()
 	})
 end
 
-event = function(evt, data)
+function M.event(evt, data)
 	if evt == "editor/buffer_left" then
 		return "editor/teardown"
 	end
@@ -33,7 +33,7 @@ event = function(evt, data)
 	end
 end
 
-update = function(mdl, message)
+function M.update(mdl, message)
 	local action = message[1]
 	local data = message[2]
 
@@ -121,7 +121,7 @@ update = function(mdl, message)
 	return mdl
 end
 
-view = function(mdl, prev, props)
+function M.view(mdl, prev, props)
 	mountable.view(mdl, {
 		mount = function()
 			util.nvim.buf_set_option(mdl.buf, "bufhidden", "wipe")
@@ -192,9 +192,4 @@ view = function(mdl, prev, props)
 	})
 end
 
-return {
-	model = model,
-	event = event,
-	update = update,
-	view = view,
-}
+return M

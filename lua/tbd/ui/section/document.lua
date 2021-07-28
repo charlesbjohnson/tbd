@@ -3,9 +3,9 @@ local mountable = require("tbd.ui.common.mountable")
 
 local DocumentTree = require("tbd.data.document_tree")
 
-local model, event, update, view
+local M = {}
 
-model = function()
+function M.model()
 	return mountable.model({
 		buf = util.nvim.create_buf(true, false),
 		tree = DocumentTree:new(),
@@ -15,7 +15,7 @@ model = function()
 	})
 end
 
-event = function(evt, data)
+function M.event(evt, data)
 	if evt == "document/buffer_unloaded" then
 		return { "document/teardown", "quit" }
 	end
@@ -73,7 +73,7 @@ event = function(evt, data)
 	end
 end
 
-update = function(mdl, message)
+function M.update(mdl, message)
 	local action = message[1]
 	local data = message[2]
 
@@ -227,7 +227,7 @@ update = function(mdl, message)
 	return mdl
 end
 
-view = function(mdl, prev, props)
+function M.view(mdl, prev, props)
 	mountable.view(mdl, {
 		mount = function()
 			util.nvim.buf_set_option(mdl.buf, "buftype", "nowrite")
@@ -296,9 +296,4 @@ view = function(mdl, prev, props)
 	})
 end
 
-return {
-	model = model,
-	event = event,
-	update = update,
-	view = view,
-}
+return M

@@ -1,6 +1,6 @@
-local copy, dig, extend
+local M = {}
 
-copy = function(tbl)
+function M.copy(tbl)
 	local cpy = {}
 
 	for k, v in pairs(tbl) do
@@ -10,7 +10,7 @@ copy = function(tbl)
 	return cpy
 end
 
-dig = function(tbl, path)
+function M.dig(tbl, path)
 	if type(tbl) ~= "table" or type(path) ~= "table" then
 		return
 	end
@@ -26,12 +26,8 @@ dig = function(tbl, path)
 	return tbl
 end
 
-extend = function(tbl, ...)
+function M.extend(tbl, ...)
 	return vim.tbl_extend("force", tbl, ...)
 end
 
-return {
-	copy = copy,
-	dig = dig,
-	extend = extend,
-}
+return M

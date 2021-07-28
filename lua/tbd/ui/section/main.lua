@@ -3,24 +3,24 @@ local util = require("tbd.util")
 local document = require("tbd.ui.section.document")
 local editor = require("tbd.ui.section.editor")
 
-local model, id, start, event, update, view
+local M = {}
 
-model = function()
+function M.model()
 	return {
 		document = document.model(),
 		editor = editor.model(),
 	}
 end
 
-id = function(mdl)
+function M.id(mdl)
 	return mdl.document.buf
 end
 
-start = function()
+function M.start()
 	return "document/setup"
 end
 
-event = function(evt, data)
+function M.event(evt, data)
 	local messages = {}
 
 	util.list.concat(messages, document.event(evt, data))
@@ -29,7 +29,7 @@ event = function(evt, data)
 	return messages
 end
 
-update = function(mdl, message)
+function M.update(mdl, message)
 	local dcmt, dcmt_msg = document.update(util.table.copy(mdl.document), message)
 	local edtr, edtr_msg = editor.update(util.table.copy(mdl.editor), message)
 
@@ -39,16 +39,9 @@ update = function(mdl, message)
 	return next_model, next_messages
 end
 
-view = function(mdl, prev, props)
+function M.view(mdl, prev, props)
 	document.view(mdl.document, prev.document, props)
 	editor.view(mdl.editor, prev.editor, props)
 end
 
-return {
-	model = model,
-	id = id,
-	start = start,
-	event = event,
-	update = update,
-	view = view,
-}
+return M
