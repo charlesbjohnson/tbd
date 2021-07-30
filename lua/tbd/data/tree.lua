@@ -11,9 +11,20 @@ function Tree:new()
 	return obj
 end
 
-function Tree:get(path)
-	path = path or {}
+function Tree:into_iter()
+	local traversal = self:_traverse()
+	local i = 0
 
+	return function()
+		i = i + 1
+
+		if i <= #traversal then
+			return traversal[i]
+		end
+	end
+end
+
+function Tree:get(path)
 	local node = self:_get(path)
 	if not node then
 		return
@@ -94,19 +105,6 @@ function Tree:get_prev_sibling(path)
 	local sibling_node = parent_node.children[sibling_path[#sibling_path]]
 
 	return { data = sibling_node.data, path = sibling_path }
-end
-
-function Tree:iter()
-	local traversal = self:_traverse()
-	local i = 0
-
-	return function()
-		i = i + 1
-
-		if i <= #traversal then
-			return traversal[i]
-		end
-	end
 end
 
 function Tree:set(path, data)
@@ -248,13 +246,13 @@ function Tree:_traverse()
 	return self:_traverse_rec(self._root, {}, {})
 end
 
-function Tree:_traverse_rec(node, result, path)
+function Tree:_traverse_rec(node, path, result)
 	if node ~= self._root then
 		table.insert(result, { data = node.data, path = path })
 	end
 
 	for i, child in ipairs(node.children) do
-		self:_traverse_rec(child, result, util.list.concat({}, path, i))
+		self:_traverse_rec(child, util.list.concat({}, path, i), result)
 	end
 
 	return result

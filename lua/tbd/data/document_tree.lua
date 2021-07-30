@@ -212,7 +212,7 @@ end
 function DocumentTree:_render()
 	self._lines = {}
 
-	for node in self._tree:iter() do
+	for node in self._tree:into_iter() do
 		table.insert(self._lines, string.rep("  ", #node.path - 1) .. node.data)
 	end
 
