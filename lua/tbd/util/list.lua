@@ -19,8 +19,7 @@ function M.flatten(lst, depth)
 
 	local flattened = {}
 
-	local i = 1
-	while i <= #lst do
+	for i = 0, #lst do
 		local v = lst[i]
 
 		if type(v) == "table" and depth > 0 then
@@ -28,8 +27,6 @@ function M.flatten(lst, depth)
 		else
 			table.insert(flattened, v)
 		end
-
-		i = i + 1
 	end
 
 	return flattened
@@ -48,10 +45,8 @@ function M.slice(lst, start, finish)
 		finish = #lst + (finish + 1)
 	end
 
-	local i = start
-	while i <= finish do
+	for i = start, finish do
 		table.insert(sliced, lst[i])
-		i = i + 1
 	end
 
 	return sliced
