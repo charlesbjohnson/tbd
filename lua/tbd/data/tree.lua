@@ -216,13 +216,6 @@ function Tree:_get_node_at(path)
 	return node
 end
 
-function Tree:_to_node(data)
-	return {
-		data = data,
-		children = {},
-	}
-end
-
 function Tree:_traverse()
 	return self:_traverse_rec(self._root, {}, {})
 end
@@ -237,6 +230,13 @@ function Tree:_traverse_rec(node, result, path)
 	end
 
 	return result
+end
+
+function Tree:_to_node(data)
+	return {
+		data = data,
+		children = {},
+	}
 end
 
 return Tree
