@@ -23,8 +23,8 @@ function Tree:from_iter(iter)
 	return obj
 end
 
-function Tree:into_iter()
-	local traversal = self:_traverse()
+function Tree:into_iter(root)
+	local traversal = self:_traverse(root)
 	local i = 0
 
 	return function()
@@ -46,23 +46,12 @@ function Tree:get(path)
 end
 
 function Tree:get_tree(path)
-	local root = self:_get(path)
-	if not root then
+	local node = self:_get(path)
+	if not node then
 		return
 	end
 
-	local traversal = self:_traverse(root)
-	local i = 0
-
-	local iter = function()
-		i = i + 1
-
-		if i <= #traversal then
-			return traversal[i]
-		end
-	end
-
-	return Tree:from_iter(iter)
+	return Tree:from_iter(self:into_iter(node))
 end
 
 function Tree:get_parent(path)
