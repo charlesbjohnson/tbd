@@ -4,13 +4,61 @@ local Tree = require("tbd.data.tree")
 local DocumentTree = {}
 DocumentTree.__index = DocumentTree
 
-function DocumentTree:new()
+function DocumentTree:new(tree)
 	local obj = setmetatable({}, self)
 
-	obj._tree = Tree:new()
-	obj._lines = {}
+	obj._tree = tree or Tree:new()
+	obj._lines = self._render(obj)
 
 	return obj
+end
+
+function DocumentTree:from_lines(lines)
+	lines = util.string.strip_blanks(lines)
+	lines = util.string.dedent(lines)
+
+	local paths = {}
+	local data = {}
+
+	local prev_path = {}
+
+	for _, line in ipairs(lines) do
+		local depth = math.ceil((line:find("%S")) / 2)
+		local path = util.table.copy(prev_path)
+
+		if depth - #path > 1 then
+			return
+		end
+
+		if depth > #path then
+			table.insert(path, 0)
+		else
+			while depth < #path do
+				table.remove(path)
+			end
+		end
+
+		path[#path] = path[#path] + 1
+
+		table.insert(paths, path)
+		table.insert(data, (line:sub(depth * 2 - 1)))
+
+		prev_path = path
+	end
+
+	local iter = function()
+		local i = 0
+
+		return function()
+			i = i + 1
+
+			if i <= #paths then
+				return { data = data[i], path = paths[i] }
+			end
+		end
+	end
+
+	return self:new(Tree:from_iter(iter()))
 end
 
 function DocumentTree:get(row)
