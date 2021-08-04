@@ -94,6 +94,14 @@ function M.event(evt, data)
 		if data.key == "<Tab>p" then
 			return "document/paste_append_under_line"
 		end
+
+		if data.key == "dd" then
+			return "document/delete_line"
+		end
+
+		if data.key == "dt" then
+			return "document/delete_tree"
+		end
 	end
 end
 
@@ -338,6 +346,34 @@ function M.update(mdl, message)
 		return mdl
 	end
 
+	if action == "document/delete_line" then
+		local line = mdl.tree:get(mdl.cursor[1])
+		if not line then
+			return mdl
+		end
+
+		mdl.tree:remove(mdl.cursor[1])
+		util.vim.set_current_register(line.parsed)
+
+		mdl.lines = mdl.tree:to_lines()
+
+		return mdl
+	end
+
+	if action == "document/delete_tree" then
+		local tree = mdl.tree:get_tree(mdl.cursor[1])
+		if not tree then
+			return mdl
+		end
+
+		mdl.tree:remove_tree(mdl.cursor[1])
+		util.vim.set_current_register(util.string.join(tree:to_lines(), "\n"))
+
+		mdl.lines = mdl.tree:to_lines()
+
+		return mdl
+	end
+
 	return mdl
 end
 
@@ -394,6 +430,9 @@ function M.view(mdl, prev, props)
 			util.nvim.buf_set_keymap(mdl.buf, "n", "P", key_pressed_event("P"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>p", key_pressed_event("<Tab>p"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>P", key_pressed_event("<Tab>P"))
+
+			util.nvim.buf_set_keymap(mdl.buf, "n", "dd", key_pressed_event("dd"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "dt", key_pressed_event("dt"))
 
 			util.nvim.win_set_buf(0, mdl.buf)
 		end,

@@ -242,6 +242,18 @@ function DocumentTree:remove(row)
 	return result
 end
 
+function DocumentTree:remove_tree(row)
+	local path = self:_get_path_at(row)
+	local tree = self._tree:remove_tree(path)
+	if not tree then
+		return
+	end
+
+	self:_render()
+
+	return DocumentTree:new(tree)
+end
+
 function DocumentTree:render()
 	return util.table.copy(self._lines)
 end

@@ -346,9 +346,32 @@ function Tree:remove(path)
 		return
 	end
 
-	table.remove(node.parent.children, path[#path])
+	local parent_node = node.parent
+
+	table.remove(parent_node.children, path[#path])
+	node.parent = nil
+
+	for i = #node.children, 1, -1 do
+		local child_node = node.children[i]
+		table.insert(parent_node.children, path[#path], child_node)
+		child_node.parent = parent_node
+	end
 
 	return { data = node.data, path = util.table.copy(path) }
+end
+
+function Tree:remove_tree(path)
+	local node = self:_get(path)
+	if not node then
+		return
+	end
+
+	local tree = Tree:from_iter(self:into_iter(node))
+
+	table.remove(node.parent.children, path[#path])
+	node.parent = nil
+
+	return tree
 end
 
 function Tree:is_empty()
