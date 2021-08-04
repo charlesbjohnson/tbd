@@ -45,6 +45,26 @@ function Tree:get(path)
 	return { data = node.data, path = util.table.copy(path) }
 end
 
+function Tree:get_tree(path)
+	local root = self:_get(path)
+	if not root then
+		return
+	end
+
+	local traversal = self:_traverse(root)
+	local i = 0
+
+	local iter = function()
+		i = i + 1
+
+		if i <= #traversal then
+			return traversal[i]
+		end
+	end
+
+	return Tree:from_iter(iter)
+end
+
 function Tree:get_parent(path)
 	local child_node = self:_get(path)
 	if not child_node or child_node.parent == self._root then
@@ -135,6 +155,24 @@ function Tree:set(path, data)
 	return self:get(path)
 end
 
+function Tree:set_tree(path, tree)
+	if not tree or tree:is_empty() then
+		return
+	end
+
+	local node = self:_get(path, self:is_empty())
+	if not node then
+		return
+	end
+
+	node.children = tree._root.children
+	for _, child_node in ipairs(tree._root.children) do
+		child_node.parent = node
+	end
+
+	return self:get(path)
+end
+
 function Tree:prepend_to(path, data)
 	if self:is_empty() then
 		return self:set(path, data)
@@ -150,6 +188,29 @@ function Tree:prepend_to(path, data)
 
 	if parent_node == self._root then
 		return self:get(path)
+	end
+
+	return self:get_first_child(path)
+end
+
+function Tree:prepend_tree_to(path, tree)
+	if not tree or tree:is_empty() then
+		return
+	end
+
+	if self:is_empty() then
+		return self:set_tree(path, tree)
+	end
+
+	local parent_node = self:_get(path, self:is_empty())
+	if not parent_node then
+		return
+	end
+
+	for i = #tree._root.children, 1, -1 do
+		local child_node = tree._root.children[i]
+		table.insert(parent_node.children, 1, child_node)
+		child_node.parent = parent_node
 	end
 
 	return self:get_first_child(path)
@@ -175,6 +236,29 @@ function Tree:append_to(path, data)
 	return self:get_last_child(path)
 end
 
+function Tree:append_tree_to(path, tree)
+	if not tree or tree:is_empty() then
+		return
+	end
+
+	if self:is_empty() then
+		return self:set_tree(path, tree)
+	end
+
+	local parent_node = self:_get(path, self:is_empty())
+	if not parent_node then
+		return
+	end
+
+	for i = 1, #tree._root.children do
+		local child_node = tree._root.children[i]
+		table.insert(parent_node.children, child_node)
+		child_node.parent = parent_node
+	end
+
+	return self:get_last_child(path)
+end
+
 function Tree:insert_before(path, data)
 	if self:is_empty() then
 		return self:set(path, data)
@@ -191,6 +275,32 @@ function Tree:insert_before(path, data)
 	table.insert(parent_node.children, path[#path], child_node)
 
 	return self:get(path)
+end
+
+function Tree:insert_tree_before(path, tree)
+	if not tree or tree:is_empty() then
+		return
+	end
+
+	if self:is_empty() then
+		return self:set_tree(path, tree)
+	end
+
+	local sibling_node = self:_get(path)
+	if not sibling_node then
+		return
+	end
+
+	local parent_node = sibling_node.parent
+	local child_path = path
+
+	for i = #tree._root.children, 1, -1 do
+		local child_node = tree._root.children[i]
+		table.insert(parent_node.children, path[#path], tree._root.children[i])
+		child_node.parent = parent_node
+	end
+
+	return self:get(child_path)
 end
 
 function Tree:insert_after(path, data)
@@ -210,6 +320,33 @@ function Tree:insert_after(path, data)
 	child_path[#child_path] = child_path[#child_path] + 1
 
 	table.insert(parent_node.children, child_path[#child_path], child_node)
+
+	return self:get(child_path)
+end
+
+function Tree:insert_tree_after(path, tree)
+	if not tree or tree:is_empty() then
+		return
+	end
+
+	if self:is_empty() then
+		return self:set_tree(path, tree)
+	end
+
+	local sibling_node = self:_get(path)
+	if not sibling_node then
+		return
+	end
+
+	local parent_node = sibling_node.parent
+	local child_path = util.table.copy(path)
+	child_path[#child_path] = child_path[#child_path] + 1
+
+	for i = 1, #tree._root.children do
+		local child_node = tree._root.children[i]
+		table.insert(parent_node.children, child_path[#child_path], child_node)
+		child_node.parent = parent_node
+	end
 
 	return self:get(child_path)
 end

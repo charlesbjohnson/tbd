@@ -71,6 +71,16 @@ function DocumentTree:get(row)
 	return self:_to_line(node)
 end
 
+function DocumentTree:get_tree(row)
+	local path = self:_get_path_at(row)
+	local tree = self._tree:get_tree(path)
+	if not tree then
+		return
+	end
+
+	return DocumentTree:new(tree)
+end
+
 function DocumentTree:get_parent(row)
 	local path = self:_get_path_at(row)
 	local node = self._tree:get_parent(path)
@@ -135,9 +145,33 @@ function DocumentTree:prepend_to(row, data)
 	return self:_to_line(node)
 end
 
+function DocumentTree:prepend_tree_to(row, tree)
+	local path = self:_get_path_at(row)
+	local node = self._tree:prepend_tree_to(path, tree._tree)
+	if not node then
+		return
+	end
+
+	self:_render()
+
+	return self:_to_line(node)
+end
+
 function DocumentTree:append_to(row, data)
 	local path = self:_get_path_at(row)
 	local node = self._tree:append_to(path, util.string.trim(data))
+	if not node then
+		return
+	end
+
+	self:_render()
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:append_tree_to(row, tree)
+	local path = self:_get_path_at(row)
+	local node = self._tree:append_tree_to(path, tree._tree)
 	if not node then
 		return
 	end
@@ -159,9 +193,33 @@ function DocumentTree:insert_before(row, data)
 	return self:_to_line(node)
 end
 
+function DocumentTree:insert_tree_before(row, tree)
+	local path = self:_get_path_at(row)
+	local node = self._tree:insert_tree_before(path, tree._tree)
+	if not node then
+		return
+	end
+
+	self:_render()
+
+	return self:_to_line(node)
+end
+
 function DocumentTree:insert_after(row, data)
 	local path = self:_get_path_at(row)
 	local node = self._tree:insert_after(path, util.string.trim(data))
+	if not node then
+		return
+	end
+
+	self:_render()
+
+	return self:_to_line(node)
+end
+
+function DocumentTree:insert_tree_after(row, tree)
+	local path = self:_get_path_at(row)
+	local node = self._tree:insert_tree_after(path, tree._tree)
 	if not node then
 		return
 	end

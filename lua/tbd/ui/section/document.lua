@@ -70,6 +70,30 @@ function M.event(evt, data)
 		if data.key == "<Tab>o" then
 			return "document/append_under_line"
 		end
+
+		if data.key == "yy" then
+			return "document/yank_line"
+		end
+
+		if data.key == "yt" then
+			return "document/yank_tree"
+		end
+
+		if data.key == "p" then
+			return "document/paste_after_line"
+		end
+
+		if data.key == "P" then
+			return "document/paste_before_line"
+		end
+
+		if data.key == "<Tab>P" then
+			return "document/paste_prepend_under_line"
+		end
+
+		if data.key == "<Tab>p" then
+			return "document/paste_append_under_line"
+		end
 	end
 end
 
@@ -238,6 +262,82 @@ function M.update(mdl, message)
 		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
+	if action == "document/yank_line" then
+		local line = mdl.tree:get(mdl.cursor[1])
+
+		if line then
+			util.vim.set_current_register(line.parsed)
+		end
+
+		return mdl
+	end
+
+	if action == "document/yank_tree" then
+		local tree = mdl.tree:get_tree(mdl.cursor[1])
+
+		if tree then
+			util.vim.set_current_register(util.string.join(tree:render(), "\n"))
+		end
+
+		return mdl
+	end
+
+	if action == "document/paste_before_line" then
+		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local tree = DocumentTree:from_lines(lines)
+
+		if tree then
+			local line = mdl.tree:insert_tree_before(mdl.cursor[1], tree)
+			mdl.cursor = { line.row, line.col - 1 }
+
+			mdl.lines = mdl.tree:render()
+		end
+
+		return mdl
+	end
+
+	if action == "document/paste_after_line" then
+		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local tree = DocumentTree:from_lines(lines)
+
+		if tree then
+			local line = mdl.tree:insert_tree_after(mdl.cursor[1], tree)
+			mdl.cursor = { line.row, line.col - 1 }
+
+			mdl.lines = mdl.tree:render()
+		end
+
+		return mdl
+	end
+
+	if action == "document/paste_prepend_under_line" then
+		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local tree = DocumentTree:from_lines(lines)
+
+		if tree then
+			local line = mdl.tree:prepend_tree_to(mdl.cursor[1], tree)
+			mdl.cursor = { line.row, line.col - 1 }
+
+			mdl.lines = mdl.tree:render()
+		end
+
+		return mdl
+	end
+
+	if action == "document/paste_append_under_line" then
+		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local tree = DocumentTree:from_lines(lines)
+
+		if tree then
+			local line = mdl.tree:append_tree_to(mdl.cursor[1], tree)
+			mdl.cursor = { line.row, line.col - 1 }
+
+			mdl.lines = mdl.tree:render()
+		end
+
+		return mdl
+	end
+
 	return mdl
 end
 
@@ -286,6 +386,14 @@ function M.view(mdl, prev, props)
 
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>o", key_pressed_event("<Tab>o"))
 			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>O", key_pressed_event("<Tab>O"))
+
+			util.nvim.buf_set_keymap(mdl.buf, "n", "yy", key_pressed_event("yy"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "yt", key_pressed_event("yt"))
+
+			util.nvim.buf_set_keymap(mdl.buf, "n", "p", key_pressed_event("p"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "P", key_pressed_event("P"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>p", key_pressed_event("<Tab>p"))
+			util.nvim.buf_set_keymap(mdl.buf, "n", "<Tab>P", key_pressed_event("<Tab>P"))
 
 			util.nvim.win_set_buf(0, mdl.buf)
 		end,
