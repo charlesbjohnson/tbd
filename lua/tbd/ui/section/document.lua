@@ -130,7 +130,7 @@ function M.update(mdl, message)
 		mdl.tree:append_to(4, "qux")
 		mdl.tree:append_to(7, "qux")
 
-		mdl.lines = mdl.tree:render()
+		mdl.lines = mdl.tree:to_lines()
 
 		return mdl
 	end
@@ -216,7 +216,7 @@ function M.update(mdl, message)
 	if action == "document/finish_edit_line" then
 		if mdl.line.parsed ~= data.line then
 			mdl.line = mdl.tree:set(mdl.line.row, data.line)
-			mdl.lines = mdl.tree:render()
+			mdl.lines = mdl.tree:to_lines()
 		end
 
 		mdl.cursor = { mdl.line.row, (mdl.line.col - 1) + data.cursor[2] }
@@ -227,7 +227,7 @@ function M.update(mdl, message)
 
 	if action == "document/abort_edit_line" then
 		mdl.line = mdl.tree:remove(mdl.line.row)
-		mdl.lines = mdl.tree:render()
+		mdl.lines = mdl.tree:to_lines()
 
 		mdl.line = nil
 
@@ -236,36 +236,36 @@ function M.update(mdl, message)
 
 	if action == "document/insert_before_line" then
 		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "__")
-		mdl.lines = mdl.tree:render()
-
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		mdl.lines = mdl.tree:to_lines()
 
 		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/insert_after_line" then
 		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "__")
-		mdl.lines = mdl.tree:render()
-
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		mdl.lines = mdl.tree:to_lines()
 
 		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/prepend_under_line" then
 		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "__")
-		mdl.lines = mdl.tree:render()
-
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		mdl.lines = mdl.tree:to_lines()
 
 		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
 
 	if action == "document/append_under_line" then
 		mdl.line = mdl.tree:append_to(mdl.cursor[1], "__")
-		mdl.lines = mdl.tree:render()
-
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+
+		mdl.lines = mdl.tree:to_lines()
 
 		return mdl, { "document/begin_edit_line", { start_blank = true, start_insert = true } }
 	end
@@ -284,7 +284,7 @@ function M.update(mdl, message)
 		local tree = mdl.tree:get_tree(mdl.cursor[1])
 
 		if tree then
-			util.vim.set_current_register(util.string.join(tree:render(), "\n"))
+			util.vim.set_current_register(util.string.join(tree:to_lines(), "\n"))
 		end
 
 		return mdl
@@ -298,7 +298,7 @@ function M.update(mdl, message)
 			local line = mdl.tree:insert_tree_before(mdl.cursor[1], tree)
 			mdl.cursor = { line.row, line.col - 1 }
 
-			mdl.lines = mdl.tree:render()
+			mdl.lines = mdl.tree:to_lines()
 		end
 
 		return mdl
@@ -312,7 +312,7 @@ function M.update(mdl, message)
 			local line = mdl.tree:insert_tree_after(mdl.cursor[1], tree)
 			mdl.cursor = { line.row, line.col - 1 }
 
-			mdl.lines = mdl.tree:render()
+			mdl.lines = mdl.tree:to_lines()
 		end
 
 		return mdl
@@ -326,7 +326,7 @@ function M.update(mdl, message)
 			local line = mdl.tree:prepend_tree_to(mdl.cursor[1], tree)
 			mdl.cursor = { line.row, line.col - 1 }
 
-			mdl.lines = mdl.tree:render()
+			mdl.lines = mdl.tree:to_lines()
 		end
 
 		return mdl
@@ -340,7 +340,7 @@ function M.update(mdl, message)
 			local line = mdl.tree:append_tree_to(mdl.cursor[1], tree)
 			mdl.cursor = { line.row, line.col - 1 }
 
-			mdl.lines = mdl.tree:render()
+			mdl.lines = mdl.tree:to_lines()
 		end
 
 		return mdl

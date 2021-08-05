@@ -254,8 +254,8 @@ function DocumentTree:remove_tree(row)
 	return DocumentTree:new(tree)
 end
 
-function DocumentTree:render()
-	return util.table.copy(self._lines)
+function DocumentTree:to_lines()
+	return self._lines
 end
 
 function DocumentTree:_get_path_at(row)
