@@ -90,13 +90,7 @@ function M.update(mdl, message)
 		mdl.line = nil
 
 		if line == "" then
-			return mdl, {
-				"document/abort_edit_line",
-				{
-					cursor = cursor,
-					line = line,
-				},
-			}
+			return mdl, "document/abort_edit_line"
 		end
 
 		return mdl, {
