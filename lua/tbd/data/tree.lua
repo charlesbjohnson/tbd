@@ -36,6 +36,10 @@ function Tree:into_iter(root)
 	end
 end
 
+function Tree:copy()
+	return Tree:from_iter(self:into_iter())
+end
+
 function Tree:get(path)
 	local node = self:_get(path)
 	if not node then

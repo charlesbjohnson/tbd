@@ -61,6 +61,10 @@ function DocumentTree:from_lines(lines)
 	return self:new(Tree:from_iter(iter()))
 end
 
+function DocumentTree:copy()
+	return DocumentTree:new(self._tree:copy())
+end
+
 function DocumentTree:get(row)
 	local path = self:_get_path_at(row)
 	local node = self._tree:get(path)
