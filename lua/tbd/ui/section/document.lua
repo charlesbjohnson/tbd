@@ -220,9 +220,6 @@ function M.update(mdl, message)
 			table.insert(mdl.tree_history.past, mdl.tree)
 			table.insert(mdl.cursor_history.past, mdl.cursor)
 
-			mdl.tree_history.future = {}
-			mdl.cursor_history.future = {}
-
 			mdl.tree = mdl.tree:copy()
 			mdl.cursor = util.table.copy(mdl.cursor)
 		end
@@ -245,25 +242,30 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/finish_edit_line" then
-		if mdl.line.parsed ~= data.line then
-			mdl.line = mdl.tree:set(mdl.line.row, data.line)
-			mdl.lines = mdl.tree:to_lines()
+		mdl.tree_history.future = {}
+		mdl.cursor_history.future = {}
+
+		if data.line == "" then
+			mdl.tree:remove(mdl.line.row)
+		else
+			local line = mdl.tree:set(mdl.line.row, data.line)
+			mdl.cursor = { line.row, (line.col - 1) + data.cursor[2] }
 		end
 
-		mdl.cursor = { mdl.line.row, (mdl.line.col - 1) + data.cursor[2] }
+		mdl.lines = mdl.tree:to_lines()
 		mdl.line = nil
 
 		return mdl
 	end
 
 	if action == "document/abort_edit_line" then
-		if mdl.line.parsed == "__" then
-			table.remove(mdl.tree_history.past)
-			table.remove(mdl.cursor_history.past)
-		end
+		table.remove(mdl.tree_history.past)
+		table.remove(mdl.cursor_history.past)
 
-		mdl.line = mdl.tree:remove(mdl.line.row)
-		mdl.lines = mdl.tree:to_lines()
+		if mdl.line.parsed == "__" then
+			mdl.line = mdl.tree:remove(mdl.line.row)
+			mdl.lines = mdl.tree:to_lines()
+		end
 
 		mdl.line = nil
 
@@ -273,9 +275,6 @@ function M.update(mdl, message)
 	if action == "document/insert_before_line" then
 		table.insert(mdl.tree_history.past, mdl.tree)
 		table.insert(mdl.cursor_history.past, mdl.cursor)
-
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "__")
@@ -290,9 +289,6 @@ function M.update(mdl, message)
 		table.insert(mdl.tree_history.past, mdl.tree)
 		table.insert(mdl.cursor_history.past, mdl.cursor)
 
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
-
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "__")
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
@@ -306,9 +302,6 @@ function M.update(mdl, message)
 		table.insert(mdl.tree_history.past, mdl.tree)
 		table.insert(mdl.cursor_history.past, mdl.cursor)
 
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
-
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "__")
 		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
@@ -321,9 +314,6 @@ function M.update(mdl, message)
 	if action == "document/append_under_line" then
 		table.insert(mdl.tree_history.past, mdl.tree)
 		table.insert(mdl.cursor_history.past, mdl.cursor)
-
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:append_to(mdl.cursor[1], "__")
