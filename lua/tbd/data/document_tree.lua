@@ -8,7 +8,12 @@ function DocumentTree:new(tree)
 	local obj = setmetatable({}, self)
 
 	obj._tree = tree or Tree:new()
-	obj._lines = self._render(obj)
+	obj._lines = {}
+
+	obj._rows_to_paths = nil
+	obj._paths_to_rows = nil
+
+	self._render(obj)
 
 	return obj
 end
@@ -263,82 +268,37 @@ function DocumentTree:to_lines()
 end
 
 function DocumentTree:_get_path_at(row)
-	row = row or 1
-
-	if row == 1 then
+	if row == 1 and #self._lines == 0 then
 		return { 1 }
 	end
 
-	if row < 1 or row > #self._lines then
-		return
-	end
-
-	local path = {}
-
-	local cursor = { row, (self._lines[row]:find("%S")) }
-	local distance = 0
-
-	while true do
-		if cursor[1] == 0 then
-			table.insert(path, 1, distance)
-			break
-		end
-
-		local line = self._lines[cursor[1]]
-
-		if cursor[2] > #line or (cursor[2] > 2 and line:sub(cursor[2] - 2, cursor[2] - 1) ~= "  ") then
-			table.insert(path, 1, distance)
-			distance = 1
-			cursor[2] = cursor[2] - 2
-		elseif line:sub(cursor[2], cursor[2]) ~= " " then
-			distance = distance + 1
-		end
-
-		cursor[1] = cursor[1] - 1
-	end
-
-	return path
+	return self._rows_to_paths[row]
 end
 
 function DocumentTree:_get_row_at(path)
-	path = path or {}
-
-	if #path == 0 then
-		return
+	if #path == 1 and path[1] == 1 and #self._lines == 0 then
+		return 1
 	end
 
-	local cursor = { 1, 1 }
-
-	for depth, distance in ipairs(path) do
-		while distance > 0 do
-			local line = self._lines[cursor[1]]
-
-			if line:sub(cursor[2], cursor[2] + 1) ~= "  " then
-				distance = distance - 1
-			end
-
-			if distance > 0 then
-				cursor[1] = cursor[1] + 1
-			end
-		end
-
-		if depth < #path then
-			cursor[1] = cursor[1] + 1
-			cursor[2] = cursor[2] + 2
-		end
-	end
-
-	return cursor[1]
+	return self._paths_to_rows[util.string.join(path, ",")]
 end
 
 function DocumentTree:_render()
 	self._lines = {}
 
-	for node in self._tree:into_iter() do
-		table.insert(self._lines, string.rep("  ", #node.path - 1) .. node.data)
-	end
+	self._paths_to_rows = {}
+	self._rows_to_paths = {}
 
-	return self._lines
+	local row = 1
+
+	for node in self._tree:into_iter() do
+		table.insert(self._lines, row, string.rep("  ", #node.path - 1) .. node.data)
+
+		self._paths_to_rows[util.string.join(node.path, ",")] = row
+		self._rows_to_paths[row] = node.path
+
+		row = row + 1
+	end
 end
 
 function DocumentTree:_to_line(node)
