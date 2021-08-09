@@ -134,7 +134,7 @@ function M.update(mdl, message)
 		end
 
 		mdl.tree = DocumentTree:new()
-		mdl.cursor = util.nvim.win_get_cursor(0)
+		mdl.cursor = { 1, 0 }
 
 		mdl.tree:set(1, "foo")
 		mdl.tree:insert_after(1, "foo")
