@@ -338,7 +338,7 @@ function M.update(mdl, message)
 		local tree = mdl.tree:get_tree(mdl.cursor[1])
 
 		if tree then
-			util.vim.set_current_register(util.string.join(tree:to_lines(), "\n"))
+			util.vim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
 		end
 
 		return mdl
@@ -463,7 +463,7 @@ function M.update(mdl, message)
 
 		mdl.tree = mdl.tree:copy()
 		mdl.tree:remove_tree(mdl.cursor[1])
-		util.vim.set_current_register(util.string.join(tree:to_lines(), "\n"))
+		util.vim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -589,7 +589,13 @@ function M.view(mdl, prev, props)
 		view = function()
 			if mdl.lines and prev.lines ~= mdl.lines then
 				util.nvim.buf_set_option(mdl.buf, "modifiable", true)
-				util.nvim.buf_set_lines(mdl.buf, 0, -1, false, mdl.lines)
+
+				util.nvim.buf_set_lines(mdl.buf, #mdl.lines, -1, false, {})
+
+				for i, line in ipairs(mdl.lines) do
+					util.nvim.buf_set_lines(mdl.buf, i - 1, i, false, { line.source })
+				end
+
 				util.nvim.buf_set_option(mdl.buf, "modifiable", false)
 			end
 

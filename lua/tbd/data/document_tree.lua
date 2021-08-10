@@ -267,6 +267,16 @@ function DocumentTree:to_lines()
 	return self._lines
 end
 
+function DocumentTree:to_source_lines()
+	local result = {}
+
+	for _, line in ipairs(self._lines) do
+		table.insert(result, line.source)
+	end
+
+	return result
+end
+
 function DocumentTree:_get_path_at(row)
 	if row == 1 and #self._lines == 0 then
 		return { 1 }
@@ -292,7 +302,12 @@ function DocumentTree:_render()
 	local row = 1
 
 	for node in self._tree:into_iter() do
-		table.insert(self._lines, row, string.rep("  ", #node.path - 1) .. node.data)
+		table.insert(self._lines, row, {
+			source = string.rep("  ", #node.path - 1) .. node.data,
+			parsed = node.data,
+			row = row,
+			col = (#node.path * 2) - 1,
+		})
 
 		self._paths_to_rows[util.string.join(node.path, ",")] = row
 		self._rows_to_paths[row] = node.path
@@ -302,17 +317,7 @@ function DocumentTree:_render()
 end
 
 function DocumentTree:_to_line(node)
-	local row = self:_get_row_at(node.path)
-
-	local line = self._lines[row]
-	local col = (line:find(node.data))
-
-	return {
-		source = line,
-		parsed = node.data,
-		row = row,
-		col = col,
-	}
+	return self._lines[self:_get_row_at(node.path)]
 end
 
 return DocumentTree
