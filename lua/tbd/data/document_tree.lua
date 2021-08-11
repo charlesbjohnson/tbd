@@ -46,7 +46,7 @@ function DocumentTree:from_lines(lines)
 		path[#path] = path[#path] + 1
 
 		table.insert(paths, path)
-		table.insert(data, (line:sub(depth * 2 - 1)))
+		table.insert(data, { content = (line:sub(depth * 2 - 1)) })
 
 		prev_path = path
 	end
@@ -67,7 +67,15 @@ function DocumentTree:from_lines(lines)
 end
 
 function DocumentTree:copy()
-	return DocumentTree:new(self._tree:copy())
+	local inner = self._tree:into_iter()
+	local iter = function()
+		local node = inner()
+		if node then
+			return { data = util.table.copy(node.data), path = node.path }
+		end
+	end
+
+	return DocumentTree:new(Tree:from_iter(iter))
 end
 
 function DocumentTree:get(row)
@@ -85,6 +93,10 @@ function DocumentTree:get_tree(row)
 	local tree = self._tree:get_tree(path)
 	if not tree then
 		return
+	end
+
+	for node in tree:into_iter() do
+		tree:set(node.path, util.table.copy(node.data))
 	end
 
 	return DocumentTree:new(tree)
@@ -132,7 +144,7 @@ end
 
 function DocumentTree:set(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:set(path, util.string.trim(data))
+	local node = self._tree:set(path, { content = util.string.trim(data) })
 	if not node then
 		return
 	end
@@ -144,7 +156,7 @@ end
 
 function DocumentTree:prepend_to(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:prepend_to(path, util.string.trim(data))
+	local node = self._tree:prepend_to(path, { content = util.string.trim(data) })
 	if not node then
 		return
 	end
@@ -168,7 +180,7 @@ end
 
 function DocumentTree:append_to(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:append_to(path, util.string.trim(data))
+	local node = self._tree:append_to(path, { content = util.string.trim(data) })
 	if not node then
 		return
 	end
@@ -192,7 +204,7 @@ end
 
 function DocumentTree:insert_before(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:insert_before(path, util.string.trim(data))
+	local node = self._tree:insert_before(path, { content = util.string.trim(data) })
 	if not node then
 		return
 	end
@@ -216,7 +228,7 @@ end
 
 function DocumentTree:insert_after(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:insert_after(path, util.string.trim(data))
+	local node = self._tree:insert_after(path, { content = util.string.trim(data) })
 	if not node then
 		return
 	end
@@ -303,8 +315,8 @@ function DocumentTree:_render()
 
 	for node in self._tree:into_iter() do
 		table.insert(self._lines, row, {
-			source = string.rep("  ", #node.path - 1) .. node.data,
-			parsed = node.data,
+			source = string.rep("  ", #node.path - 1) .. node.data.content,
+			parsed = node.data.content,
 			row = row,
 			col = (#node.path * 2) - 1,
 		})
