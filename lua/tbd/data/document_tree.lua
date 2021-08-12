@@ -90,16 +90,19 @@ end
 
 function DocumentTree:get_tree(row)
 	local path = self:_get_path_at(row)
-	local tree = self._tree:get_tree(path)
-	if not tree then
+	if not self._tree:get(path) then
 		return
 	end
 
-	for node in tree:into_iter() do
-		tree:set(node.path, util.table.copy(node.data))
+	local inner = self._tree:into_iter(path)
+	local iter = function()
+		local node = inner()
+		if node then
+			return { data = util.table.copy(node.data), path = node.path }
+		end
 	end
 
-	return DocumentTree:new(tree)
+	return DocumentTree:new(Tree:from_iter(iter))
 end
 
 function DocumentTree:get_parent(row)

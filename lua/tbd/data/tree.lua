@@ -23,8 +23,8 @@ function Tree:from_iter(iter)
 	return obj
 end
 
-function Tree:into_iter(root)
-	local traversal = self:_traverse(root)
+function Tree:into_iter(path)
+	local traversal = self:_traverse(self:_get(path))
 	local i = 0
 
 	return function()
@@ -43,15 +43,6 @@ function Tree:get(path)
 	end
 
 	return { data = node.data, path = util.table.copy(path) }
-end
-
-function Tree:get_tree(path)
-	local node = self:_get(path)
-	if not node then
-		return
-	end
-
-	return Tree:from_iter(self:into_iter(node))
 end
 
 function Tree:get_parent(path)
@@ -366,7 +357,7 @@ function Tree:remove_tree(path)
 		return
 	end
 
-	local tree = Tree:from_iter(self:into_iter(node))
+	local tree = Tree:from_iter(self:into_iter(path))
 
 	table.remove(node.parent.children, path[#path])
 	node.parent = nil
