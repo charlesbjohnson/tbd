@@ -1,5 +1,15 @@
 local M = {}
 
+function M.any(lst, fn)
+	for i, v in ipairs(lst) do
+		if fn(i, v) then
+			return true
+		end
+	end
+
+	return false
+end
+
 function M.concat(lst, ...)
 	for _, other in ipairs({ ... }) do
 		if type(other) == "table" then

@@ -426,7 +426,11 @@ end
 
 function Tree:_traverse_rec(node, path, result)
 	if node ~= self._root then
-		table.insert(result, { data = node.data, path = path })
+		table.insert(result, {
+			data = node.data,
+			path = path,
+			children = #node.children,
+		})
 	end
 
 	for i, child in ipairs(node.children) do

@@ -46,7 +46,7 @@ function DocumentTree:from_lines(lines)
 		path[#path] = path[#path] + 1
 
 		table.insert(paths, path)
-		table.insert(data, { content = (line:sub(depth * 2 - 1)) })
+		table.insert(data, { content = (line:sub(depth * 2 - 1)), persist = {} })
 
 		prev_path = path
 	end
@@ -98,7 +98,7 @@ function DocumentTree:get_tree(row)
 	local iter = function()
 		local node = inner()
 		if node then
-			return { data = util.table.copy(node.data), path = node.path }
+			return { data = util.table.extend({}, node.data, { persist = {} }), path = node.path }
 		end
 	end
 
@@ -147,7 +147,7 @@ end
 
 function DocumentTree:set(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:set(path, { content = util.string.trim(data) })
+	local node = self._tree:set(path, { content = util.string.trim(data), persist = {} })
 	if not node then
 		return
 	end
@@ -159,11 +159,12 @@ end
 
 function DocumentTree:prepend_to(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:prepend_to(path, { content = util.string.trim(data) })
+	local node = self._tree:prepend_to(path, { content = util.string.trim(data), persist = {} })
 	if not node then
 		return
 	end
 
+	self:_unfold(self._tree:get_parent(node.path))
 	self:_render()
 
 	return self:_to_line(node)
@@ -176,6 +177,7 @@ function DocumentTree:prepend_tree_to(row, tree)
 		return
 	end
 
+	self:_unfold_downward(self._tree:get_parent(node.path))
 	self:_render()
 
 	return self:_to_line(node)
@@ -183,11 +185,12 @@ end
 
 function DocumentTree:append_to(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:append_to(path, { content = util.string.trim(data) })
+	local node = self._tree:append_to(path, { content = util.string.trim(data), persist = {} })
 	if not node then
 		return
 	end
 
+	self:_unfold(self._tree:get_parent(node.path))
 	self:_render()
 
 	return self:_to_line(node)
@@ -200,6 +203,7 @@ function DocumentTree:append_tree_to(row, tree)
 		return
 	end
 
+	self:_unfold_downward(self._tree:get_parent(node.path))
 	self:_render()
 
 	return self:_to_line(node)
@@ -207,7 +211,7 @@ end
 
 function DocumentTree:insert_before(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:insert_before(path, { content = util.string.trim(data) })
+	local node = self._tree:insert_before(path, { content = util.string.trim(data), persist = {} })
 	if not node then
 		return
 	end
@@ -224,6 +228,7 @@ function DocumentTree:insert_tree_before(row, tree)
 		return
 	end
 
+	self:_unfold_downward(node)
 	self:_render()
 
 	return self:_to_line(node)
@@ -231,7 +236,7 @@ end
 
 function DocumentTree:insert_after(row, data)
 	local path = self:_get_path_at(row)
-	local node = self._tree:insert_after(path, { content = util.string.trim(data) })
+	local node = self._tree:insert_after(path, { content = util.string.trim(data), persist = {} })
 	if not node then
 		return
 	end
@@ -248,6 +253,7 @@ function DocumentTree:insert_tree_after(row, tree)
 		return
 	end
 
+	self:_unfold_downward(node)
 	self:_render()
 
 	return self:_to_line(node)
@@ -255,6 +261,8 @@ end
 
 function DocumentTree:remove(row)
 	local path = self:_get_path_at(row)
+	self:_unfold_downward(self._tree:get(path))
+
 	local node = self._tree:remove(path)
 	if not node then
 		return
@@ -268,6 +276,8 @@ end
 
 function DocumentTree:remove_tree(row)
 	local path = self:_get_path_at(row)
+	self:_unfold_downward(self._tree:get(path))
+
 	local tree = self._tree:remove_tree(path)
 	if not tree then
 		return
@@ -278,7 +288,128 @@ function DocumentTree:remove_tree(row)
 	return DocumentTree:new(tree)
 end
 
-function DocumentTree:to_lines()
+function DocumentTree:fold(row)
+	local path = self:_get_path_at(row)
+	local node = self._tree:get(path)
+	if not node then
+		return false
+	end
+
+	if self:_fold(node) then
+		self:_render()
+		return true
+	end
+
+	return false
+end
+
+function DocumentTree:fold_downward(row)
+	local path = self:_get_path_at(row)
+	local node = self._tree:get(path)
+	if not node then
+		return false
+	end
+
+	if self:_fold_downward(node) then
+		self:_render()
+	end
+
+	return true
+end
+
+function DocumentTree:fold_all()
+	local path = { 1 }
+	local result = false
+
+	while true do
+		local node = self._tree:get(path)
+		if not node then
+			break
+		end
+
+		result = self:_fold_downward(node) or result
+		path[1] = path[1] + 1
+	end
+
+	if result then
+		self:_render()
+	end
+
+	return result
+end
+
+function DocumentTree:unfold(row)
+	local path = self:_get_path_at(row)
+	local node = self._tree:get(path)
+	if not node then
+		return false
+	end
+
+	if self:_unfold(node) then
+		self:_render()
+		return true
+	end
+
+	return false
+end
+
+function DocumentTree:unfold_downward(row)
+	local path = self:_get_path_at(row)
+	local node = self._tree:get(path)
+	if not node then
+		return false
+	end
+
+	if self:_unfold_downward(node) then
+		self:_render()
+	end
+
+	return true
+end
+
+function DocumentTree:unfold_upward(path)
+	path = util.table.copy(path) or {}
+
+	local result = false
+
+	while #path > 0 do
+		result = self:_unfold(self._tree:get(path)) or result
+		table.remove(path)
+	end
+
+	if result then
+		self:_render()
+	end
+
+	return result
+end
+
+function DocumentTree:unfold_all()
+	local path = { 1 }
+	local result = false
+
+	while true do
+		local node = self._tree:get(path)
+		if not node then
+			break
+		end
+
+		result = self:_unfold_downward(node) or result
+		path[1] = path[1] + 1
+	end
+
+	if result then
+		self:_render()
+	end
+
+	return result
+end
+
+function DocumentTree:to_lines(render)
+	if render then
+		self:_render()
+	end
+
 	return self._lines
 end
 
@@ -316,24 +447,94 @@ function DocumentTree:_render()
 
 	local row = 1
 
+	local stack = {}
+	local prev
+
 	for node in self._tree:into_iter() do
-		local line = {
-			source = nil,
-			parsed = node.data.content,
-			row = row,
-			col_start = (#node.path * 2) - 1,
-			col_end = nil,
-		}
+		if prev and #node.path > #prev.path then
+			table.insert(stack, prev)
+		else
+			while #stack > 0 and #node.path <= #stack[#stack].path do
+				table.remove(stack)
+			end
+		end
 
-		line.source = string.rep(" ", line.col_start - 1) .. line.parsed
-		line.col_end = #line.source
+		local is_folded = util.list.any(stack, function(_, v)
+			return v.data.persist.is_folded
+		end)
 
-		table.insert(self._lines, row, line)
-		self._paths_to_rows[util.string.join(node.path, ",")] = row
-		self._rows_to_paths[row] = node.path
+		if not is_folded then
+			local line = {
+				path = node.path,
+				source = nil,
+				parsed = node.data.content,
+				row = row,
+				col_start = (#node.path * 2) - 1,
+				col_end = nil,
+			}
 
-		row = row + 1
+			line.source = string.rep(" ", line.col_start - 1) .. line.parsed
+			line.col_end = #line.source
+
+			if node.data.persist.is_folded and node.children > 0 then
+				line.meta = string.format(" [%i]", node.children)
+			end
+
+			table.insert(self._lines, row, line)
+			self._paths_to_rows[util.string.join(node.path, ",")] = row
+			self._rows_to_paths[row] = node.path
+
+			row = row + 1
+		end
+
+		prev = node
 	end
+end
+
+function DocumentTree:_fold(node)
+	if node and not node.data.persist.is_folded then
+		node.data.persist.is_folded = true
+		return true
+	end
+
+	return false
+end
+
+function DocumentTree:_fold_downward(node)
+	if not node then
+		return false
+	end
+
+	local result = false
+
+	for child_node in self._tree:into_iter(node.path) do
+		result = self:_fold(child_node) or result
+	end
+
+	return result
+end
+
+function DocumentTree:_unfold(node)
+	if node and node.data.persist.is_folded then
+		node.data.persist.is_folded = false
+		return true
+	end
+
+	return false
+end
+
+function DocumentTree:_unfold_downward(node)
+	if not node then
+		return false
+	end
+
+	local result = false
+
+	for child_node in self._tree:into_iter(node.path) do
+		result = self:_unfold(child_node) or result
+	end
+
+	return result
 end
 
 function DocumentTree:_to_line(node)
