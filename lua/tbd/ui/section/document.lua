@@ -478,7 +478,7 @@ function M.update(mdl, message)
 			local past = mdl.history.past[#mdl.history.past]
 			local future = {
 				tree = mdl.tree,
-				cursor = mdl.cursor,
+				cursor = past.cursor,
 			}
 
 			table.remove(mdl.history.past)
@@ -497,7 +497,7 @@ function M.update(mdl, message)
 			local future = mdl.history.future[#mdl.history.future]
 			local past = {
 				tree = mdl.tree,
-				cursor = mdl.cursor,
+				cursor = future.cursor,
 			}
 
 			table.remove(mdl.history.future)
@@ -591,7 +591,7 @@ function M.view(mdl, prev, props)
 			end
 
 			if mdl.cursor and prev.cursor ~= mdl.cursor then
-				util.nvim.win_set_cursor(0, mdl.cursor)
+				util.nvim.win_set_cursor(0, { math.min(mdl.cursor[1], #mdl.lines + 1), mdl.cursor[2] })
 			end
 		end,
 
