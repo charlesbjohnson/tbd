@@ -53,17 +53,17 @@ function M.update(mdl, message)
 
 			bufpos = { 0, 0 },
 			row = data.line.row - 1,
-			col = data.line.col - 1,
+			col = data.line.col_start - 1,
 
 			height = 1,
-			width = util.nvim.win_get_net_width(0) - data.line.col,
+			width = util.nvim.win_get_net_width(0) - data.line.col_start,
 		})
 
 		mdl.start_blank = data.start_blank and true or false
 		mdl.start_insert = data.start_insert and true or false
 		mdl.start_append = data.start_append and true or false
 
-		mdl.cursor = { 1, data.cursor[2] - (data.line.col - 1) }
+		mdl.cursor = { 1, data.cursor[2] - (data.line.col_start - 1) }
 		if mdl.start_append then
 			mdl.cursor[2] = mdl.cursor[2] + 1
 

@@ -317,13 +317,18 @@ function DocumentTree:_render()
 	local row = 1
 
 	for node in self._tree:into_iter() do
-		table.insert(self._lines, row, {
-			source = string.rep("  ", #node.path - 1) .. node.data.content,
+		local line = {
+			source = nil,
 			parsed = node.data.content,
 			row = row,
-			col = (#node.path * 2) - 1,
-		})
+			col_start = (#node.path * 2) - 1,
+			col_end = nil,
+		}
 
+		line.source = string.rep(" ", line.col_start - 1) .. line.parsed
+		line.col_end = #line.source
+
+		table.insert(self._lines, row, line)
 		self._paths_to_rows[util.string.join(node.path, ",")] = row
 		self._rows_to_paths[row] = node.path
 

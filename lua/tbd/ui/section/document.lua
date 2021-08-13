@@ -162,8 +162,8 @@ function M.update(mdl, message)
 	if action == "document/reposition_cursor" then
 		local line = mdl.tree:get(data.cursor[1])
 
-		if line and (mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.col - 1) then
-			mdl.cursor = { data.cursor[1], line.col - 1 }
+		if line and (mdl.cursor[1] ~= data.cursor[1] or data.cursor[2] < line.col_start - 1) then
+			mdl.cursor = { data.cursor[1], line.col_start - 1 }
 		else
 			mdl.cursor = data.cursor
 		end
@@ -175,7 +175,7 @@ function M.update(mdl, message)
 		local line = mdl.tree:get_parent(mdl.cursor[1])
 
 		if line then
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_start - 1 }
 		end
 
 		return mdl
@@ -185,7 +185,7 @@ function M.update(mdl, message)
 		local line = mdl.tree:get_first_child(mdl.cursor[1])
 
 		if line then
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_start - 1 }
 		end
 
 		return mdl
@@ -195,7 +195,7 @@ function M.update(mdl, message)
 		local line = mdl.tree:get_next_sibling(mdl.cursor[1])
 
 		if line then
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_start - 1 }
 		end
 
 		return mdl
@@ -205,7 +205,7 @@ function M.update(mdl, message)
 		local line = mdl.tree:get_prev_sibling(mdl.cursor[1])
 
 		if line then
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_start - 1 }
 		end
 
 		return mdl
@@ -245,7 +245,7 @@ function M.update(mdl, message)
 			mdl.tree:remove(mdl.line.row)
 		else
 			local line = mdl.tree:set(mdl.line.row, data.line)
-			mdl.cursor = { line.row, (line.col - 1) + data.cursor[2] }
+			mdl.cursor = { line.row, (line.col_start - 1) + data.cursor[2] }
 		end
 
 		mdl.lines = mdl.tree:to_lines()
@@ -275,7 +275,7 @@ function M.update(mdl, message)
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "__")
-		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+		mdl.cursor = { mdl.line.row, mdl.line.col_start - 1 }
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -290,7 +290,7 @@ function M.update(mdl, message)
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "__")
-		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+		mdl.cursor = { mdl.line.row, mdl.line.col_start - 1 }
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -305,7 +305,7 @@ function M.update(mdl, message)
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "__")
-		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+		mdl.cursor = { mdl.line.row, mdl.line.col_start - 1 }
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -320,7 +320,7 @@ function M.update(mdl, message)
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:append_to(mdl.cursor[1], "__")
-		mdl.cursor = { mdl.line.row, mdl.line.col - 1 }
+		mdl.cursor = { mdl.line.row, mdl.line.col_start - 1 }
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -360,7 +360,7 @@ function M.update(mdl, message)
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:insert_tree_before(mdl.cursor[1], tree)
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_start - 1 }
 
 			mdl.lines = mdl.tree:to_lines()
 		end
@@ -381,7 +381,7 @@ function M.update(mdl, message)
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:insert_tree_after(mdl.cursor[1], tree)
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_end - 1 }
 
 			mdl.lines = mdl.tree:to_lines()
 		end
@@ -402,7 +402,7 @@ function M.update(mdl, message)
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:prepend_tree_to(mdl.cursor[1], tree)
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_end - 1 }
 
 			mdl.lines = mdl.tree:to_lines()
 		end
@@ -423,7 +423,7 @@ function M.update(mdl, message)
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:append_tree_to(mdl.cursor[1], tree)
-			mdl.cursor = { line.row, line.col - 1 }
+			mdl.cursor = { line.row, line.col_end - 1 }
 
 			mdl.lines = mdl.tree:to_lines()
 		end
