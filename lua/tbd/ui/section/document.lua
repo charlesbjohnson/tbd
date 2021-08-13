@@ -10,19 +10,15 @@ function M.model()
 		buf = util.nvim.create_buf(true, false),
 
 		tree = nil,
-		tree_history = {
-			past = {},
-			future = {},
-		},
-
 		cursor = nil,
-		cursor_history = {
+		line = nil,
+
+		history = {
 			past = {},
 			future = {},
 		},
 
 		lines = nil,
-		line = nil,
 	})
 end
 
@@ -217,8 +213,10 @@ function M.update(mdl, message)
 
 	if action == "document/begin_edit_line" then
 		if not mdl.line then
-			table.insert(mdl.tree_history.past, mdl.tree)
-			table.insert(mdl.cursor_history.past, mdl.cursor)
+			table.insert(mdl.history.past, {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			})
 
 			mdl.tree = mdl.tree:copy()
 			mdl.cursor = util.table.copy(mdl.cursor)
@@ -241,8 +239,7 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/finish_edit_line" then
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
+		mdl.history.future = {}
 
 		if data.line == "" then
 			mdl.tree:remove(mdl.line.row)
@@ -258,8 +255,7 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/abort_edit_line" then
-		table.remove(mdl.tree_history.past)
-		table.remove(mdl.cursor_history.past)
+		table.remove(mdl.history.past)
 
 		if data.line == "" then
 			mdl.line = mdl.tree:remove(mdl.line.row)
@@ -272,8 +268,10 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/insert_before_line" then
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_before(mdl.cursor[1], "__")
@@ -285,8 +283,10 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/insert_after_line" then
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:insert_after(mdl.cursor[1], "__")
@@ -298,8 +298,10 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/prepend_under_line" then
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:prepend_to(mdl.cursor[1], "__")
@@ -311,8 +313,10 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/append_under_line" then
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:append_to(mdl.cursor[1], "__")
@@ -348,11 +352,11 @@ function M.update(mdl, message)
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
-			table.insert(mdl.tree_history.past, mdl.tree)
-			table.insert(mdl.cursor_history.past, mdl.cursor)
-
-			mdl.tree_history.future = {}
-			mdl.cursor_history.future = {}
+			mdl.history.future = {}
+			table.insert(mdl.history.past, {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			})
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:insert_tree_before(mdl.cursor[1], tree)
@@ -369,11 +373,11 @@ function M.update(mdl, message)
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
-			table.insert(mdl.tree_history.past, mdl.tree)
-			table.insert(mdl.cursor_history.past, mdl.cursor)
-
-			mdl.tree_history.future = {}
-			mdl.cursor_history.future = {}
+			mdl.history.future = {}
+			table.insert(mdl.history.past, {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			})
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:insert_tree_after(mdl.cursor[1], tree)
@@ -390,11 +394,11 @@ function M.update(mdl, message)
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
-			table.insert(mdl.tree_history.past, mdl.tree)
-			table.insert(mdl.cursor_history.past, mdl.cursor)
-
-			mdl.tree_history.future = {}
-			mdl.cursor_history.future = {}
+			mdl.history.future = {}
+			table.insert(mdl.history.past, {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			})
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:prepend_tree_to(mdl.cursor[1], tree)
@@ -411,11 +415,11 @@ function M.update(mdl, message)
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
-			table.insert(mdl.tree_history.past, mdl.tree)
-			table.insert(mdl.cursor_history.past, mdl.cursor)
-
-			mdl.tree_history.future = {}
-			mdl.cursor_history.future = {}
+			mdl.history.future = {}
+			table.insert(mdl.history.past, {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			})
 
 			mdl.tree = mdl.tree:copy()
 			local line = mdl.tree:append_tree_to(mdl.cursor[1], tree)
@@ -433,11 +437,11 @@ function M.update(mdl, message)
 			return mdl
 		end
 
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
-
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
+		mdl.history.future = {}
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.tree:remove(mdl.cursor[1])
@@ -454,11 +458,11 @@ function M.update(mdl, message)
 			return mdl
 		end
 
-		table.insert(mdl.tree_history.past, mdl.tree)
-		table.insert(mdl.cursor_history.past, mdl.cursor)
-
-		mdl.tree_history.future = {}
-		mdl.cursor_history.future = {}
+		mdl.history.future = {}
+		table.insert(mdl.history.past, {
+			tree = mdl.tree,
+			cursor = mdl.cursor,
+		})
 
 		mdl.tree = mdl.tree:copy()
 		mdl.tree:remove_tree(mdl.cursor[1])
@@ -470,50 +474,38 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/undo" then
-		if #mdl.tree_history.past > 0 then
-			local tree_past = mdl.tree_history.past[#mdl.tree_history.past]
-			local tree_future = mdl.tree
+		if #mdl.history.past > 0 then
+			local past = mdl.history.past[#mdl.history.past]
+			local future = {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			}
 
-			table.remove(mdl.tree_history.past)
-			table.insert(mdl.tree_history.future, tree_future)
+			table.remove(mdl.history.past)
+			table.insert(mdl.history.future, future)
 
-			mdl.tree = tree_past
+			mdl.tree = past.tree
+			mdl.cursor = past.cursor
 			mdl.lines = mdl.tree:to_lines()
-		end
-
-		if #mdl.cursor_history.past > 0 then
-			local cursor_past = mdl.cursor_history.past[#mdl.cursor_history.past]
-			local cursor_future = mdl.cursor
-
-			table.remove(mdl.cursor_history.past)
-			table.insert(mdl.cursor_history.future, cursor_future)
-
-			mdl.cursor = cursor_past
 		end
 
 		return mdl
 	end
 
 	if action == "document/redo" then
-		if #mdl.tree_history.future > 0 then
-			local tree_future = mdl.tree_history.future[#mdl.tree_history.future]
-			local tree_past = mdl.tree
+		if #mdl.history.future > 0 then
+			local future = mdl.history.future[#mdl.history.future]
+			local past = {
+				tree = mdl.tree,
+				cursor = mdl.cursor,
+			}
 
-			table.remove(mdl.tree_history.future)
-			table.insert(mdl.tree_history.past, tree_past)
+			table.remove(mdl.history.future)
+			table.insert(mdl.history.past, past)
 
-			mdl.tree = tree_future
+			mdl.tree = future.tree
+			mdl.cursor = future.cursor
 			mdl.lines = mdl.tree:to_lines()
-		end
-
-		if #mdl.cursor_history.future > 0 then
-			local cursor_future = mdl.cursor_history.future[#mdl.cursor_history.future]
-			local cursor_past = mdl.cursor
-
-			table.remove(mdl.cursor_history.future)
-			table.insert(mdl.cursor_history.past, cursor_past)
-
-			mdl.cursor = cursor_future
 		end
 
 		return mdl
