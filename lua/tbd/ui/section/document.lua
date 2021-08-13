@@ -222,13 +222,12 @@ function M.update(mdl, message)
 
 			mdl.tree = mdl.tree:copy()
 			mdl.cursor = util.table.copy(mdl.cursor)
-		end
 
-		mdl.line = mdl.line or mdl.tree:get(mdl.cursor[1])
-
-		if not mdl.line then
-			mdl.line = mdl.tree:set(mdl.cursor[1], "__")
-			data.start_blank = true
+			mdl.line = mdl.tree:get(mdl.cursor[1])
+			if not mdl.line then
+				mdl.line = mdl.tree:set(mdl.cursor[1], "__")
+				data.start_blank = true
+			end
 		end
 
 		return mdl,
@@ -262,7 +261,7 @@ function M.update(mdl, message)
 		table.remove(mdl.tree_history.past)
 		table.remove(mdl.cursor_history.past)
 
-		if mdl.line.parsed == "__" then
+		if data.line == "" then
 			mdl.line = mdl.tree:remove(mdl.line.row)
 			mdl.lines = mdl.tree:to_lines()
 		end

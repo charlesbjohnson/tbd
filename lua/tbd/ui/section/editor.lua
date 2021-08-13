@@ -73,9 +73,9 @@ function M.update(mdl, message)
 			end
 		end
 
-		mdl.line = data.line
+		mdl.line = data.line.parsed
 		if mdl.start_blank then
-			mdl.line = util.table.extend({}, data.line, { parsed = "" })
+			mdl.line = ""
 		end
 
 		return mdl
@@ -90,12 +90,12 @@ function M.update(mdl, message)
 		mdl.cursor = nil
 
 		local line = util.string.trim(util.nvim.get_current_line())
-		local orig = mdl.line.parsed
+		local orig = mdl.line
 
 		mdl.line = nil
 
 		if line == orig then
-			return mdl, "document/abort_edit_line"
+			return mdl, { "document/abort_edit_line", { line = line } }
 		end
 
 		return mdl, {
@@ -166,7 +166,7 @@ function M.view(mdl, prev, props)
 		view = function()
 			if mdl.line and prev.line ~= mdl.line then
 				util.nvim.buf_set_option(mdl.buf, "undolevels", -1)
-				util.nvim.buf_set_lines(mdl.buf, 0, 1, true, { mdl.line.parsed })
+				util.nvim.buf_set_lines(mdl.buf, 0, 1, true, { mdl.line })
 				util.nvim.buf_set_option(mdl.buf, "undolevels", 1000)
 			end
 
