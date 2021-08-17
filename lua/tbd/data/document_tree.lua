@@ -1,6 +1,28 @@
 local util = require("tbd.util")
 local Tree = require("tbd.data.tree")
 
+local Line = {}
+Line.__index = Line
+
+function Line:new(row, node, tree)
+	local obj = setmetatable({}, self)
+
+	obj.row = row
+	obj.path = node.path
+
+	obj.parsed = node.data.content
+	obj.col_start = (#obj.path * 2) - 1
+
+	obj.source = string.rep(" ", obj.col_start - 1) .. obj.parsed
+	obj.col_end = #obj.source
+
+	if tree:_is_folded(node) and node.children > 0 then
+		obj.meta = string.format(" [%i]", node.children)
+	end
+
+	return obj
+end
+
 local DocumentTree = {}
 DocumentTree.__index = DocumentTree
 
@@ -85,7 +107,7 @@ function DocumentTree:get(row)
 		return
 	end
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:get_tree(row)
@@ -112,7 +134,7 @@ function DocumentTree:get_parent(row)
 		return
 	end
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:get_first_child(row)
@@ -122,7 +144,7 @@ function DocumentTree:get_first_child(row)
 		return
 	end
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:get_next_sibling(row)
@@ -132,7 +154,7 @@ function DocumentTree:get_next_sibling(row)
 		return
 	end
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:get_prev_sibling(row)
@@ -142,7 +164,7 @@ function DocumentTree:get_prev_sibling(row)
 		return
 	end
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:set(row, data)
@@ -154,7 +176,7 @@ function DocumentTree:set(row, data)
 
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:prepend_to(row, data)
@@ -167,7 +189,7 @@ function DocumentTree:prepend_to(row, data)
 	self:_unfold(self._tree:get_parent(node.path))
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:prepend_tree_to(row, tree)
@@ -180,7 +202,7 @@ function DocumentTree:prepend_tree_to(row, tree)
 	self:_unfold_downward(self._tree:get_parent(node.path))
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:append_to(row, data)
@@ -193,7 +215,7 @@ function DocumentTree:append_to(row, data)
 	self:_unfold(self._tree:get_parent(node.path))
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:append_tree_to(row, tree)
@@ -206,7 +228,7 @@ function DocumentTree:append_tree_to(row, tree)
 	self:_unfold_downward(self._tree:get_parent(node.path))
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:insert_before(row, data)
@@ -218,7 +240,7 @@ function DocumentTree:insert_before(row, data)
 
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:insert_tree_before(row, tree)
@@ -231,7 +253,7 @@ function DocumentTree:insert_tree_before(row, tree)
 	self:_unfold_downward(node)
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:insert_after(row, data)
@@ -243,7 +265,7 @@ function DocumentTree:insert_after(row, data)
 
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:insert_tree_after(row, tree)
@@ -256,7 +278,7 @@ function DocumentTree:insert_tree_after(row, tree)
 	self:_unfold_downward(node)
 	self:_render()
 
-	return self:_to_line(node)
+	return self:_get_line_for(node)
 end
 
 function DocumentTree:remove(row)
@@ -268,7 +290,7 @@ function DocumentTree:remove(row)
 		return
 	end
 
-	local result = self:_to_line(node)
+	local result = self:_get_line_for(node)
 	self:_render()
 
 	return result
@@ -439,6 +461,10 @@ function DocumentTree:_get_row_at(path)
 	return self._paths_to_rows[util.string.join(path, ",")]
 end
 
+function DocumentTree:_get_line_for(node)
+	return self._lines[self:_get_row_at(node.path)]
+end
+
 function DocumentTree:_render()
 	self._lines = {}
 
@@ -464,23 +490,8 @@ function DocumentTree:_render()
 		end)
 
 		if not is_folded then
-			local line = {
-				path = node.path,
-				source = nil,
-				parsed = node.data.content,
-				row = row,
-				col_start = (#node.path * 2) - 1,
-				col_end = nil,
-			}
+			table.insert(self._lines, row, Line:new(row, node, self))
 
-			line.source = string.rep(" ", line.col_start - 1) .. line.parsed
-			line.col_end = #line.source
-
-			if self:_is_folded(node) and node.children > 0 then
-				line.meta = string.format(" [%i]", node.children)
-			end
-
-			table.insert(self._lines, row, line)
 			self._paths_to_rows[util.string.join(node.path, ",")] = row
 			self._rows_to_paths[row] = node.path
 
@@ -539,10 +550,6 @@ end
 
 function DocumentTree:_is_folded(node)
 	return node.data.persist.is_folded
-end
-
-function DocumentTree:_to_line(node)
-	return self._lines[self:_get_row_at(node.path)]
 end
 
 return DocumentTree
