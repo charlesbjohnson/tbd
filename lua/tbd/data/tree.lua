@@ -1,12 +1,30 @@
 local util = require("tbd.util")
 
+local Node = {}
+Node.__index = Node
+
 local Tree = {}
 Tree.__index = Tree
+
+function Node:new(data, parent)
+	return setmetatable({
+		data = data,
+		parent = parent,
+		children = {},
+	}, self)
+end
+
+function Node:export(path)
+	return {
+		data = self.data,
+		path = util.table.copy(path),
+	}
+end
 
 function Tree:new()
 	local obj = setmetatable({}, self)
 
-	obj._root = self:_to_node()
+	obj._root = Node:new()
 
 	return obj
 end
@@ -42,7 +60,7 @@ function Tree:get(path)
 		return
 	end
 
-	return { data = node.data, path = util.table.copy(path) }
+	return node:export(path)
 end
 
 function Tree:get_parent(path)
@@ -54,7 +72,7 @@ function Tree:get_parent(path)
 	local parent_node = child_node.parent
 	local parent_path = util.list.slice(path, 1, -2)
 
-	return { data = parent_node.data, path = parent_path }
+	return parent_node:export(parent_path)
 end
 
 function Tree:get_first_child(path)
@@ -66,7 +84,7 @@ function Tree:get_first_child(path)
 	local child_node = parent_node.children[1]
 	local child_path = util.list.concat({}, path, 1)
 
-	return { data = child_node.data, path = child_path }
+	return child_node:export(child_path)
 end
 
 function Tree:get_last_child(path)
@@ -78,7 +96,7 @@ function Tree:get_last_child(path)
 	local child_node = parent_node.children[#parent_node.children]
 	local child_path = util.list.concat({}, path, #parent_node.children)
 
-	return { data = child_node.data, path = child_path }
+	return child_node:export(child_path)
 end
 
 function Tree:get_next_sibling(path)
@@ -97,7 +115,7 @@ function Tree:get_next_sibling(path)
 
 	local sibling_node = parent_node.children[sibling_path[#sibling_path]]
 
-	return { data = sibling_node.data, path = sibling_path }
+	return sibling_node:export(sibling_path)
 end
 
 function Tree:get_prev_sibling(path)
@@ -116,7 +134,7 @@ function Tree:get_prev_sibling(path)
 
 	local sibling_node = parent_node.children[sibling_path[#sibling_path]]
 
-	return { data = sibling_node.data, path = sibling_path }
+	return sibling_node:export(sibling_path)
 end
 
 function Tree:set(path, data)
@@ -126,7 +144,7 @@ function Tree:set(path, data)
 	end
 
 	if node == self._root then
-		node = self:_to_node(data, self._root)
+		node = Node:new(data, self._root)
 		table.insert(self._root.children, node)
 	else
 		node.data = data
@@ -163,7 +181,7 @@ function Tree:prepend_to(path, data)
 		return
 	end
 
-	local child_node = self:_to_node(data, parent_node)
+	local child_node = Node:new(data, parent_node)
 	table.insert(parent_node.children, 1, child_node)
 
 	if parent_node == self._root then
@@ -206,7 +224,7 @@ function Tree:append_to(path, data)
 		return
 	end
 
-	local child_node = self:_to_node(data, parent_node)
+	local child_node = Node:new(data, parent_node)
 	table.insert(parent_node.children, child_node)
 
 	if parent_node == self._root then
@@ -250,7 +268,7 @@ function Tree:insert_before(path, data)
 	end
 
 	local parent_node = sibling_node.parent
-	local child_node = self:_to_node(data, parent_node)
+	local child_node = Node:new(data, parent_node)
 
 	table.insert(parent_node.children, path[#path], child_node)
 
@@ -294,7 +312,7 @@ function Tree:insert_after(path, data)
 	end
 
 	local parent_node = sibling_node.parent
-	local child_node = self:_to_node(data, parent_node)
+	local child_node = Node:new(data, parent_node)
 
 	local child_path = util.table.copy(path)
 	child_path[#child_path] = child_path[#child_path] + 1
@@ -348,7 +366,7 @@ function Tree:remove(path)
 		child_node.parent = parent_node
 	end
 
-	return { data = node.data, path = util.table.copy(path) }
+	return node:export(path)
 end
 
 function Tree:remove_tree(path)
@@ -412,7 +430,7 @@ function Tree:_insert_at(path, data)
 		return
 	end
 
-	local child_node = self:_to_node(data, parent_node)
+	local child_node = Node:new(data, parent_node)
 	table.insert(parent_node.children, path[#path], child_node)
 
 	return child_node
@@ -426,11 +444,7 @@ end
 
 function Tree:_traverse_rec(node, path, result)
 	if node ~= self._root then
-		table.insert(result, {
-			data = node.data,
-			path = path,
-			children = #node.children,
-		})
+		table.insert(result, util.table.extend(node:export(path), { children = #node.children }))
 	end
 
 	for i, child in ipairs(node.children) do
@@ -438,14 +452,6 @@ function Tree:_traverse_rec(node, path, result)
 	end
 
 	return result
-end
-
-function Tree:_to_node(data, parent)
-	return {
-		data = data,
-		parent = parent,
-		children = {},
-	}
 end
 
 return Tree
