@@ -460,7 +460,7 @@ function DocumentTree:_render()
 		end
 
 		local is_folded = util.list.any(stack, function(_, v)
-			return v.data.persist.is_folded
+			return self:_is_folded(v)
 		end)
 
 		if not is_folded then
@@ -476,7 +476,7 @@ function DocumentTree:_render()
 			line.source = string.rep(" ", line.col_start - 1) .. line.parsed
 			line.col_end = #line.source
 
-			if node.data.persist.is_folded and node.children > 0 then
+			if self:_is_folded(node) and node.children > 0 then
 				line.meta = string.format(" [%i]", node.children)
 			end
 
@@ -492,7 +492,7 @@ function DocumentTree:_render()
 end
 
 function DocumentTree:_fold(node)
-	if node and not node.data.persist.is_folded then
+	if node and not self:_is_folded(node) then
 		node.data.persist.is_folded = true
 		return true
 	end
@@ -515,7 +515,7 @@ function DocumentTree:_fold_downward(node)
 end
 
 function DocumentTree:_unfold(node)
-	if node and node.data.persist.is_folded then
+	if node and self:_is_folded(node) then
 		node.data.persist.is_folded = false
 		return true
 	end
@@ -535,6 +535,10 @@ function DocumentTree:_unfold_downward(node)
 	end
 
 	return result
+end
+
+function DocumentTree:_is_folded(node)
+	return node.data.persist.is_folded
 end
 
 function DocumentTree:_to_line(node)
