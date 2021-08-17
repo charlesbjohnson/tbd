@@ -363,7 +363,7 @@ function M.update(mdl, message)
 		local line = mdl.tree:get(mdl.cursor[1])
 
 		if line then
-			util.vim.set_current_register(line.parsed)
+			util.nvim.set_current_register(line.parsed)
 		end
 
 		return mdl
@@ -373,14 +373,14 @@ function M.update(mdl, message)
 		local tree = mdl.tree:get_tree(mdl.cursor[1])
 
 		if tree then
-			util.vim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
+			util.nvim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
 		end
 
 		return mdl
 	end
 
 	if action == "document/paste_before_line" then
-		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local lines = util.string.split(util.nvim.get_current_register(), "\n")
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
@@ -405,7 +405,7 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/paste_after_line" then
-		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local lines = util.string.split(util.nvim.get_current_register(), "\n")
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
@@ -430,7 +430,7 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/paste_prepend_under_line" then
-		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local lines = util.string.split(util.nvim.get_current_register(), "\n")
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
@@ -455,7 +455,7 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/paste_append_under_line" then
-		local lines = util.string.split(util.vim.get_current_register(), "\n")
+		local lines = util.string.split(util.nvim.get_current_register(), "\n")
 		local tree = DocumentTree:from_lines(lines)
 
 		if tree then
@@ -494,7 +494,7 @@ function M.update(mdl, message)
 		mdl.tree = mdl.tree:copy()
 		mdl.line = mdl.tree:remove(mdl.cursor[1])
 
-		util.vim.set_current_register(mdl.line.parsed)
+		util.nvim.set_current_register(mdl.line.parsed)
 
 		mdl.history.past[#mdl.history.past].line = mdl.line
 		mdl.line = nil
@@ -520,7 +520,7 @@ function M.update(mdl, message)
 		local tree = mdl.tree:remove_tree(mdl.cursor[1])
 		mdl.line = tree:get(1)
 
-		util.vim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
+		util.nvim.set_current_register(util.string.join(tree:to_source_lines(), "\n"))
 
 		mdl.history.past[#mdl.history.past].line = mdl.line
 		mdl.line = nil

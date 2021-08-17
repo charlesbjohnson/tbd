@@ -1,5 +1,6 @@
 local string_util = require("tbd.util.string")
 local table_util = require("tbd.util.table")
+local vim_util = require("tbd.util.vim")
 
 local M = setmetatable({}, {
 	__index = function(self, k)
@@ -11,8 +12,12 @@ local M = setmetatable({}, {
 	end,
 })
 
-function M.buf_set_keymap(buf, mode, key, map, opts)
-	vim.api.nvim_buf_set_keymap(buf, mode, key, map, table_util.extend(opts or {}, { noremap = true, silent = true }))
+function M.get_current_register()
+	return vim_util.getreg(vim.api.nvim_get_vvar("register"))
+end
+
+function M.set_current_register(str)
+	vim_util.setreg(vim.api.nvim_get_vvar("register"), str)
 end
 
 function M.define_augroup(name, fn)
@@ -52,6 +57,10 @@ end
 
 function M.encode_keycodes(str)
 	return ((str:gsub("<", "&lt;")):gsub(">", "&gt;"))
+end
+
+function M.buf_set_keymap(buf, mode, key, map, opts)
+	vim.api.nvim_buf_set_keymap(buf, mode, key, map, table_util.extend(opts or {}, { noremap = true, silent = true }))
 end
 
 function M.win_get_net_width(win)
