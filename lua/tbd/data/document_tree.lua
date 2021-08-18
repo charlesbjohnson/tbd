@@ -438,8 +438,8 @@ end
 function DocumentTree:to_source_lines()
 	local result = {}
 
-	for _, line in ipairs(self._lines) do
-		table.insert(result, line.source)
+	for node in self._tree:into_iter() do
+		table.insert(result, Line:new(#result + 1, node, self).source)
 	end
 
 	return result
