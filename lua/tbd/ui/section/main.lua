@@ -6,9 +6,16 @@ local editor = require("tbd.ui.section.editor")
 local M = {}
 
 function M.model()
+	local buf = util.nvim.create_buf(true, false)
+
+	local initial = {
+		buf = buf,
+		ns = util.nvim.create_namespace("Tbd" .. buf),
+	}
+
 	return {
-		document = document.model(),
-		editor = editor.model(),
+		document = document.model(initial),
+		editor = editor.model(initial),
 	}
 end
 

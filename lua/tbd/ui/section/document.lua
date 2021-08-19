@@ -5,10 +5,10 @@ local DocumentTree = require("tbd.data.document_tree")
 
 local M = {}
 
-function M.model()
+function M.model(initial)
 	return mountable.model({
-		buf = util.nvim.create_buf(true, false),
-		ns = util.nvim.create_namespace("Tbd"),
+		ns = initial.ns,
+		buf = initial.buf,
 
 		tree = nil,
 		cursor = nil,
@@ -637,7 +637,7 @@ function M.view(mdl, prev, props)
 			util.nvim.buf_set_option(mdl.buf, "filetype", "tbd")
 			util.nvim.buf_set_option(mdl.buf, "modifiable", true)
 
-			util.nvim.define_augroup("TbdDocument", function()
+			util.nvim.define_augroup("TbdDocument" .. mdl.buf, function()
 				util.nvim.define_autocmd(
 					"BufUnload",
 					util.string.template([[lua require("tbd").event(${app}, "document/buffer_unloaded")]], props),

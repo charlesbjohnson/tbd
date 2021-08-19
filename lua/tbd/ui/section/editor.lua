@@ -3,13 +3,15 @@ local mountable = require("tbd.ui.common.mountable")
 
 local M = {}
 
-function M.model()
+function M.model(_)
 	return mountable.model({
 		buf = nil,
 		win = nil,
+
 		start_blank = nil,
 		start_insert = nil,
 		start_append = nil,
+
 		cursor = nil,
 		line = nil,
 	})
@@ -125,7 +127,7 @@ function M.view(mdl, prev, props)
 		mount = function()
 			util.nvim.buf_set_option(mdl.buf, "bufhidden", "wipe")
 
-			util.nvim.define_augroup("TbdEditor", function()
+			util.nvim.define_augroup("TbdEditor" .. mdl.buf, function()
 				util.nvim.define_autocmd(
 					"BufLeave",
 					util.string.template([[lua require("tbd").event(${app}, "editor/buffer_left")]], props),
