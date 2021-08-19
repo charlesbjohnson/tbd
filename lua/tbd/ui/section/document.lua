@@ -726,7 +726,7 @@ function M.view(mdl, prev, props)
 		end,
 
 		unmount = function()
-			vim.schedule(function()
+			util.vim.schedule(function()
 				util.nvim.buf_delete(mdl.buf, {})
 			end)
 		end,
