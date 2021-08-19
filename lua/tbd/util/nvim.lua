@@ -51,6 +51,10 @@ function M.define_autocmd(event, handler, options)
 	)
 end
 
+function M.do_autocmd(event, args)
+	vim.api.nvim_exec(string.format("doautocmd %s %s", event, args), false)
+end
+
 function M.decode_keycodes(str)
 	return ((str:gsub("&lt;", "<")):gsub("&gt;", ">"))
 end

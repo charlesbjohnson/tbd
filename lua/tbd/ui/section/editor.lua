@@ -126,6 +126,8 @@ function M.view(mdl, prev, props)
 	mountable.view(mdl, {
 		mount = function()
 			util.nvim.buf_set_option(mdl.buf, "bufhidden", "wipe")
+			util.nvim.buf_set_option(mdl.buf, "buftype", "nowrite")
+			util.nvim.buf_set_option(mdl.buf, "filetype", "tbd")
 
 			util.nvim.define_augroup("TbdEditor" .. mdl.buf, function()
 				util.nvim.define_autocmd(

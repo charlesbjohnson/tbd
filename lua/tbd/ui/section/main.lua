@@ -6,7 +6,7 @@ local editor = require("tbd.ui.section.editor")
 local M = {}
 
 function M.model()
-	local buf = util.nvim.create_buf(true, false)
+	local buf = util.nvim.get_current_buf()
 
 	local initial = {
 		buf = buf,

@@ -11,6 +11,8 @@ function M.model(initial)
 		buf = initial.buf,
 
 		tree = nil,
+		saved_tree = nil,
+
 		cursor = nil,
 		line = nil,
 
@@ -26,6 +28,10 @@ end
 function M.event(evt, data)
 	if evt == "document/buffer_unloaded" then
 		return { "document/teardown", "quit" }
+	end
+
+	if evt == "document/write" then
+		return { "document/write", util.table.extend(data, { file = util.vim.expand("<amatch>") }) }
 	end
 
 	if evt == "document/cursor_moved" then
@@ -154,22 +160,10 @@ function M.update(mdl, message)
 			return mdl
 		end
 
-		mdl.tree = DocumentTree:new()
 		mdl.cursor = { 1, 0 }
 
-		mdl.tree:set(1, "foo")
-		mdl.tree:insert_after(1, "foo")
-		mdl.tree:insert_after(1, "foo")
-
-		mdl.tree:append_to(1, "bar")
-		mdl.tree:insert_after(2, "bar")
-
-		mdl.tree:append_to(3, "baz")
-		mdl.tree:insert_after(4, "baz")
-
-		mdl.tree:append_to(4, "qux")
-		mdl.tree:append_to(4, "qux")
-		mdl.tree:append_to(7, "qux")
+		mdl.tree = DocumentTree:from_lines(util.nvim.buf_get_lines(mdl.buf, 0, -1, true))
+		mdl.saved_tree = mdl.tree
 
 		mdl.lines = mdl.tree:to_lines()
 
@@ -180,6 +174,20 @@ function M.update(mdl, message)
 		if not mountable.should_unmount(mdl) then
 			return mdl
 		end
+
+		return mdl
+	end
+
+	if action == "document/write" then
+		util.nvim.do_autocmd("BufWritePre", data.file)
+
+		util.nvim.buf_set_name(mdl.buf, data.file)
+		util.vim.writefile(mdl.tree:to_source_lines(), data.file)
+		util.nvim.buf_set_option(mdl.buf, "modified", false)
+
+		mdl.saved_tree = mdl.tree
+
+		util.nvim.do_autocmd("BufWritePost", data.file)
 
 		return mdl
 	end
@@ -633,7 +641,7 @@ end
 function M.view(mdl, prev, props)
 	mountable.view(mdl, {
 		mount = function()
-			util.nvim.buf_set_option(mdl.buf, "buftype", "nowrite")
+			util.nvim.buf_set_option(mdl.buf, "buftype", "acwrite")
 			util.nvim.buf_set_option(mdl.buf, "filetype", "tbd")
 			util.nvim.buf_set_option(mdl.buf, "modifiable", true)
 
@@ -641,6 +649,12 @@ function M.view(mdl, prev, props)
 				util.nvim.define_autocmd(
 					"BufUnload",
 					util.string.template([[lua require("tbd").event(${app}, "document/buffer_unloaded")]], props),
+					{ buffer = mdl.buf }
+				)
+
+				util.nvim.define_autocmd(
+					"BufWriteCmd",
+					util.string.template([[lua require("tbd").event(${app}, "document/write")]], props),
 					{ buffer = mdl.buf }
 				)
 
@@ -722,6 +736,11 @@ function M.view(mdl, prev, props)
 
 			if mdl.cursor and prev.cursor ~= mdl.cursor then
 				util.nvim.win_set_cursor(0, { math.min(mdl.cursor[1], #mdl.lines + 1), mdl.cursor[2] })
+			end
+
+			if util.nvim.buf_get_option(mdl.buf, "modified") and mdl.tree == mdl.saved_tree then
+				util.nvim.buf_set_option(mdl.buf, "modified", false)
+				util.nvim.do_autocmd("BufWritePost")
 			end
 		end,
 
