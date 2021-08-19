@@ -28,7 +28,6 @@ function P.dispatch(app, messages)
 		return
 	end
 
-	-- TODO: synchronization bug?
 	local next_model = util.table.copy(app.model)
 	local next_messages = {}
 
