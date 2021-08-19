@@ -4,5 +4,5 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[{*.lua,Justfile}]
+[{*.vim,*.lua,Justfile}]
 indent_style = tab
