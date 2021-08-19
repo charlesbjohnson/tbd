@@ -283,14 +283,11 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/abort_edit_line" then
-		table.remove(mdl.history.past)
+		mdl.line = nil
 
 		if data.line == "" then
-			mdl.line = mdl.tree:remove(mdl.line.row)
-			mdl.lines = mdl.tree:to_lines()
+			return mdl, { "document/undo", { redo = false } }
 		end
-
-		mdl.line = nil
 
 		return mdl
 	end
@@ -573,22 +570,27 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/undo" then
+		data.redo = not (data.redo == false)
+
 		if #mdl.history.past > 0 then
 			local past = mdl.history.past[#mdl.history.past]
-			local future = {
-				tree = mdl.tree,
-				cursor = past.cursor,
-				line = past.line,
-			}
-
 			table.remove(mdl.history.past)
-			table.insert(mdl.history.future, future)
+
+			if data.redo then
+				table.insert(mdl.history.future, {
+					tree = mdl.tree,
+					cursor = past.cursor,
+					line = past.line,
+				})
+			end
 
 			mdl.tree = past.tree
 			mdl.cursor = past.cursor
 
 			mdl.tree:unfold_downward(mdl.cursor[1])
-			mdl.tree:unfold_upward(past.line.path)
+			if past.line then
+				mdl.tree:unfold_upward(past.line.path)
+			end
 
 			mdl.lines = mdl.tree:to_lines(true)
 		end
@@ -597,22 +599,27 @@ function M.update(mdl, message)
 	end
 
 	if action == "document/redo" then
+		data.undo = not (data.undo == false)
+
 		if #mdl.history.future > 0 then
 			local future = mdl.history.future[#mdl.history.future]
-			local past = {
-				tree = mdl.tree,
-				cursor = future.cursor,
-				line = future.line,
-			}
-
 			table.remove(mdl.history.future)
-			table.insert(mdl.history.past, past)
+
+			if data.undo then
+				table.insert(mdl.history.past, {
+					tree = mdl.tree,
+					cursor = future.cursor,
+					line = future.line,
+				})
+			end
 
 			mdl.tree = future.tree
 			mdl.cursor = future.cursor
 
 			mdl.tree:unfold_downward(mdl.cursor[1])
-			mdl.tree:unfold_upward(future.line.path)
+			if future.line then
+				mdl.tree:unfold_upward(future.line.path)
+			end
 
 			mdl.lines = mdl.tree:to_lines(true)
 		end
